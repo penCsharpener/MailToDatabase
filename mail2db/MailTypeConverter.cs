@@ -29,10 +29,20 @@ namespace penCsharpener.Mail2DB {
 
             foreach (var mime in mimeMsgs) {
                 var imapMsg = new ImapMessage() {
-                    SerializedMessage = await SerializeMimeMessage(mime),
-                    To = ConvertContacts(mime.To.Mailboxes),
-                    HasAttachments = mime.Attachments.Any(x => x.IsAttachment),
-                    Attachments = await ConvertAttachments(mime.Attachments)
+                    SerializedMessage = await SerializeMimeMessage(mime.MimeMessage),
+                    To = ConvertContacts(mime.MimeMessage.To.Mailboxes),
+                    HasAttachments = mime.MimeMessage.Attachments.Any(x => x.IsAttachment),
+                    Attachments = await ConvertAttachments(mime.MimeMessage.Attachments),
+                    Body = mime.MimeMessage.HtmlBody,
+                    BodyPlainText = mime.MimeMessage.TextBody,
+                    Cc = ConvertContacts(mime.MimeMessage.Cc.Mailboxes),
+                    From = ConvertContacts(mime.MimeMessage.From.Mailboxes)[0],
+                    InReplyToId = mime.MimeMessage.InReplyTo,
+                    MessageId = mime.MimeMessage.MessageId,
+                    ReceivedAtLocal = mime.MimeMessage.Date.LocalDateTime,
+                    ReceivedAtUTC = mime.MimeMessage.Date.UtcDateTime,
+                    Subject = mime.MimeMessage.Subject,
+                    UId = mime.UniqueId.Id,
                 };
 
                 results.Add(imapMsg);

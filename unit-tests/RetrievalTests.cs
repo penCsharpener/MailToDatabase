@@ -18,7 +18,7 @@ namespace UnitTests {
                     EmailAddress = "someRandomMailxyz1234@gmail.com",
                     Password = "mySecret",
                     Port = 993,
-                    ServerURL = "imap.gmail.com"
+                    ServerURL = "imap.gmail.com",
                 });
             }
             Credentials = await CredentialHelper.GetCredentials();

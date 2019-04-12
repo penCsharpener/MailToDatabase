@@ -43,21 +43,21 @@ namespace penCsharpener.Mail2DB {
                 var inbox = Authenticate(cancel);
                 inbox.Open(FolderAccess.ReadOnly, cancel.Token);
 
-                var query = SearchQuery.DeliveredAfter(DateTime.Now.AddDays(-30));
+                var query = SearchQuery.DeliveredAfter(DateTime.Now.AddDays(-7));
                 var uids = inbox.Search(query, cancel.Token);
 
                 return uids;
             }
         }
 
-        public IEnumerable<MimeMessage> GetMessages(IList<UniqueId> uniqueIds) {
+        public IEnumerable<MimeMessageUId> GetMessages(IList<UniqueId> uniqueIds) {
             using (cancel = new CancellationTokenSource()) {
 
                 var inbox = Authenticate(cancel);
                 inbox.Open(FolderAccess.ReadOnly, cancel.Token);
 
                 foreach (var uid in uniqueIds) {
-                    yield return inbox.GetMessage(uid, cancel.Token);
+                    yield return new MimeMessageUId(inbox.GetMessage(uid, cancel.Token), uid);
                 }
             }
         }

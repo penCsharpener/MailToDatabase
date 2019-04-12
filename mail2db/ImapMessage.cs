@@ -9,7 +9,6 @@ namespace penCsharpener.Mail2DB {
         public string Body { get; set; }
         public string BodyPlainText { get; set; }
         public bool HasAttachments { get; set; }
-        public bool IsHTML { get; set; }
         public string MessageId { get; set; }
         public string InReplyToId { get; set; }
         public DateTime ReceivedAtUTC { get; set; }
