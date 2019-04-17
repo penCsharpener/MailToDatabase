@@ -1,11 +1,7 @@
 ﻿using MimeKit;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Mail;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace penCsharpener.Mail2DB {
@@ -19,13 +15,13 @@ namespace penCsharpener.Mail2DB {
             _client = client;
         }
 
-        public async Task<List<ImapMessage>> GetMessages() {
+        public async Task<List<ImapMessage>> GetMessages(ImapFilter filter = null) {
             var results = new List<ImapMessage>();
-            var uIds = _client.GetUIds();
+            var uIds = await _client.GetUIds(filter);
             if (UIdsToExclude != null) {
                 uIds = uIds.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
             }
-            var mimeMsgs = _client.GetMessages(uIds);
+            var mimeMsgs = await _client.GetMessages(uIds);
 
             foreach (var mime in mimeMsgs) {
                 var imapMsg = await mime.ToImapMessage();
