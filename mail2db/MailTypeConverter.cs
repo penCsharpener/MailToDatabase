@@ -28,29 +28,13 @@ namespace penCsharpener.Mail2DB {
             var mimeMsgs = _client.GetMessages(uIds);
 
             foreach (var mime in mimeMsgs) {
-                var imapMsg = new ImapMessage() {
-                    SerializedMessage = await SerializeMimeMessage(mime.MimeMessage),
-                    To = ConvertContacts(mime.MimeMessage.To.Mailboxes),
-                    HasAttachments = mime.MimeMessage.Attachments.Any(x => x.IsAttachment),
-                    Attachments = await ConvertAttachments(mime.MimeMessage.Attachments),
-                    Body = mime.MimeMessage.HtmlBody,
-                    BodyPlainText = mime.MimeMessage.TextBody,
-                    Cc = ConvertContacts(mime.MimeMessage.Cc.Mailboxes),
-                    From = ConvertContacts(mime.MimeMessage.From.Mailboxes)[0],
-                    InReplyToId = mime.MimeMessage.InReplyTo,
-                    MessageId = mime.MimeMessage.MessageId,
-                    ReceivedAtLocal = mime.MimeMessage.Date.LocalDateTime,
-                    ReceivedAtUTC = mime.MimeMessage.Date.UtcDateTime,
-                    Subject = mime.MimeMessage.Subject,
-                    UId = mime.UniqueId.Id,
-                };
-
+                var imapMsg = await mime.ToImapMessage();
                 results.Add(imapMsg);
             }
             return results;
         }
 
-        private MailContact[] ConvertContacts(IEnumerable<MailboxAddress> mailAddresses) {
+        public static MailContact[] ConvertContacts(IEnumerable<MailboxAddress> mailAddresses) {
             var list = new List<MailContact>();
             foreach (var address in mailAddresses) {
                 var newMailContact = new MailContact() {
@@ -62,7 +46,7 @@ namespace penCsharpener.Mail2DB {
             return list.ToArray();
         }
 
-        private async Task<ImapAttachment[]> ConvertAttachments(IEnumerable<MimeEntity> mimeEntities) {
+        public static async Task<ImapAttachment[]> ConvertAttachments(IEnumerable<MimeEntity> mimeEntities) {
             var list = new List<ImapAttachment>();
             foreach (var attachment in mimeEntities.OfType<MimePart>()) {
                 var newAttachment = new ImapAttachment() {
@@ -75,7 +59,7 @@ namespace penCsharpener.Mail2DB {
             return list.ToArray();
         }
 
-        private async Task<byte[]> SerializeMimeMessage(MimeMessage mimeMessage) {
+        public static async Task<byte[]> SerializeMimeMessage(MimeMessage mimeMessage) {
             using (var ms = new MemoryStream()) {
                 await mimeMessage.WriteToAsync(ms);
                 return ms.ToArray();
