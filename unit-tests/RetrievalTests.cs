@@ -40,6 +40,16 @@ namespace UnitTests {
             Assert.IsTrue(list?.Count > 0);
         }
 
+        [Test]
+        public async Task Deserialisation() {
+            var list = await Converter.GetMessages();
+            var oneMsg = list.FirstOrDefault();
+            if (oneMsg != null) {
+                var imapMsg = await MailTypeConverter.DeserializeMimeMessage(oneMsg.SerializedMessage, oneMsg.UId);
+                Assert.True(oneMsg.Subject == imapMsg.Subject);
+            } else Assert.Fail("No message was retrieved. Nothing to deserialise.");
+        }
+
         [TearDown]
         public void CleanUp() {
 

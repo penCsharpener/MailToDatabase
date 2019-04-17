@@ -66,5 +66,11 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
+        public static async Task<ImapMessage> DeserializeMimeMessage(byte[] mimeMessageBytes, uint? uId) {
+            using (var ms = new MemoryStream(mimeMessageBytes)) {
+                var mime = await MimeMessage.LoadAsync(ms);
+                return await mime.ToImapMessage(uId);
+            }
+        }
     }
 }
