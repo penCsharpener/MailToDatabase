@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace UnitTests {
@@ -70,6 +71,26 @@ namespace UnitTests {
                 Assert.True(oneMsg.Subject == imapMsg.Subject);
                 Console.WriteLine("Deserialized message subject: '" + imapMsg.Subject + "'");
             } else Assert.Fail("No message was retrieved. Nothing to deserialise.");
+        }
+
+        [Test]
+        public async Task SaveAttachment() {
+            var existingFile = "saved/09/test_file.txt";
+            if (File.Exists(existingFile)) {
+                File.Delete(existingFile);
+            }
+
+            var txtContent = "pretend file contents";
+            var txtBytes = Encoding.UTF8.GetBytes(txtContent);
+            var attachment = new ImapAttachment() {
+                FileContent = txtBytes,
+                Filename = "test_file.txt",
+            };
+
+            var options = new FileSavingOption(FileSavingOptions.FirstTwoHashCharacters);
+
+            await attachment.WriteFileAsync("saved", options: options);
+            Assert.IsNotNull(attachment.FileInfo);
         }
 
         [TearDown]

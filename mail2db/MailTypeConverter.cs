@@ -49,7 +49,6 @@ namespace penCsharpener.Mail2DB {
                     Filename = attachment.FileName,
                     FileContent = await attachment.ToBytes(),
                 };
-                newAttachment.Filesize = (ulong)newAttachment.FileContent.Length;
                 list.Add(newAttachment);
             }
             return list.ToArray();
