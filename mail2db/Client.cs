@@ -90,6 +90,26 @@ namespace penCsharpener.Mail2DB {
                                                | MessageSummaryItems.Envelope);
         }
 
+        public async Task MarkAsRead(IList<UniqueId> uids) {
+            await _mailFolder.SetFlagsAsync(uids, MessageFlags.Seen, false, cancel.Token);
+        }
+
+        public async Task DeleteMessages(IList<UniqueId> uids) {
+            await _mailFolder.SetFlagsAsync(uids, MessageFlags.Deleted, false);
+            await _mailFolder.ExpungeAsync(cancel.Token);
+        }
+
+        public async Task DeleteMessages(ImapFilter imapFilter) {
+            var uids = await GetUIds(imapFilter);
+            await _mailFolder.SetFlagsAsync(uids, MessageFlags.Deleted, false);
+            await _mailFolder.ExpungeAsync(cancel.Token);
+        }
+
+        public async Task<UniqueId?> AppendMessage(MimeMessage mimeMessage, bool asNotSeen = false) {
+            var flags = asNotSeen ? MessageFlags.None : MessageFlags.Seen;
+            return await _mailFolder.AppendAsync(mimeMessage);
+        }
+
         public async void Dispose() {
             await _imapClient.DisconnectAsync(true);
         }
