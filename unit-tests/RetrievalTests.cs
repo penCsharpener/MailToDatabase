@@ -93,6 +93,14 @@ namespace UnitTests {
             Assert.IsNotNull(attachment.FileInfo);
         }
 
+        [Test]
+        public async Task GetSpecificMailfolder() {
+            Mail2DB.SetMailFolder("Sent");
+            await Mail2DB.Authenticate();
+            var count = (await Mail2DB.GetUIds()).Count;
+            Assert.IsTrue(count > 0);
+        }
+
         [TearDown]
         public void CleanUp() {
 
