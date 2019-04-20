@@ -32,6 +32,11 @@ namespace penCsharpener.Mail2DB {
             return this;
         }
 
+        public ImapFilter SubjectContains(string subjectText) {
+            AndOrOr(SearchQuery.SubjectContains(subjectText));
+            return this;
+        }
+
         public ImapFilter NotSeen() {
             AndOrOr(SearchQuery.NotSeen);
             return this;
