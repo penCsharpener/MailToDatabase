@@ -33,9 +33,9 @@ namespace penCsharpener.Mail2DB {
         public async Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null) {
             try {
                 if (!_imapClient.IsConnected) {
-                    await _imapClient.ConnectAsync(ServerURL, Port, true, cancel.Token);
+                    await _imapClient.ConnectAsync(ServerURL, Port, true);
                     _imapClient.AuthenticationMechanisms.Remove("XOAUTH");
-                    await _imapClient.AuthenticateAsync(EmailAddress, Password, cancel.Token);
+                    await _imapClient.AuthenticateAsync(EmailAddress, Password);
                 }
             } catch (Exception ex) {
                 errorHandeling?.Invoke(ex);
@@ -68,12 +68,12 @@ namespace penCsharpener.Mail2DB {
             using (cancel = new CancellationTokenSource()) {
 
                 _mailFolder ??= await Authenticate();
-                await _mailFolder.OpenAsync(FolderAccess.ReadOnly, cancel.Token);
+                await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
                 if (filter == null) {
-                    return await _mailFolder.SearchAsync(new SearchQuery(), cancel.Token);
+                    return await _mailFolder.SearchAsync(new SearchQuery());
                 } else {
-                    return await _mailFolder.SearchAsync(filter.ToSearchQuery(), cancel.Token);
+                    return await _mailFolder.SearchAsync(filter.ToSearchQuery());
                 }
             }
         }
@@ -82,11 +82,11 @@ namespace penCsharpener.Mail2DB {
             using (cancel = new CancellationTokenSource()) {
 
                 _mailFolder ??= await Authenticate();
-                _mailFolder.Open(FolderAccess.ReadOnly, cancel.Token);
+                _mailFolder.Open(FolderAccess.ReadOnly);
 
                 var list = new List<MimeMessageUId>();
                 foreach (var uid in uniqueIds) {
-                    list.Add(new MimeMessageUId(_mailFolder.GetMessage(uid, cancel.Token), uid));
+                    list.Add(new MimeMessageUId(_mailFolder.GetMessage(uid), uid));
                 }
                 return list;
             }
@@ -95,43 +95,66 @@ namespace penCsharpener.Mail2DB {
         public async Task<MimeMessage> GetMessage(UniqueId uniqueId) {
             using (cancel = new CancellationTokenSource()) {
                 _mailFolder ??= await Authenticate();
-                await _mailFolder.OpenAsync(FolderAccess.ReadOnly, cancel.Token);
-                return await _mailFolder.GetMessageAsync(uniqueId, cancel.Token);
+                await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
+                return await _mailFolder.GetMessageAsync(uniqueId);
             }
         }
 
-        public async Task<IList<IMessageSummary>> GetSummary() {
+        public async Task<IList<IMessageSummary>> GetAllSummaries() {
             var inbox = await Authenticate();
-            await inbox.OpenAsync(FolderAccess.ReadOnly, cancel.Token);
+            await inbox.OpenAsync(FolderAccess.ReadOnly);
             return await inbox.FetchAsync(0, -1, MessageSummaryItems.UniqueId
                                                | MessageSummaryItems.Size
                                                | MessageSummaryItems.Flags
-                                               | MessageSummaryItems.BodyStructure
-                                               | MessageSummaryItems.GMailLabels
-                                               | MessageSummaryItems.GMailMessageId
-                                               | MessageSummaryItems.InternalDate
-                                               | MessageSummaryItems.PreviewText
+                                               //| MessageSummaryItems.BodyStructure
+                                               //| MessageSummaryItems.GMailLabels
+                                               //| MessageSummaryItems.GMailMessageId
+                                               //| MessageSummaryItems.InternalDate
+                                               //| MessageSummaryItems.PreviewText
+                                               | MessageSummaryItems.References
+                                               | MessageSummaryItems.Envelope);
+        }
+
+        public async Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids) {
+            var inbox = await Authenticate();
+            await inbox.OpenAsync(FolderAccess.ReadOnly);
+            return await inbox.FetchAsync(uids, MessageSummaryItems.UniqueId
+                                               | MessageSummaryItems.Size
+                                               | MessageSummaryItems.Flags
+                                               //| MessageSummaryItems.BodyStructure
+                                               //| MessageSummaryItems.GMailLabels
+                                               //| MessageSummaryItems.GMailMessageId
+                                               //| MessageSummaryItems.InternalDate
+                                               //| MessageSummaryItems.PreviewText
                                                | MessageSummaryItems.References
                                                | MessageSummaryItems.Envelope);
         }
 
         public async Task MarkAsRead(IList<UniqueId> uids) {
-            await _mailFolder.SetFlagsAsync(uids, MessageFlags.Seen, false, cancel.Token);
+            await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
+            await _mailFolder.SetFlagsAsync(uids, MessageFlags.Seen, false);
         }
 
         public async Task DeleteMessages(IList<UniqueId> uids) {
+            await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.SetFlagsAsync(uids, MessageFlags.Deleted, false);
-            await _mailFolder.ExpungeAsync(cancel.Token);
         }
 
         public async Task DeleteMessages(ImapFilter imapFilter) {
             var uids = await GetUIds(imapFilter);
+            var sums = await GetSummaries(uids);
+            await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.SetFlagsAsync(uids, MessageFlags.Deleted, false);
-            await _mailFolder.ExpungeAsync(cancel.Token);
+        }
+
+        public async Task ExpungeMail() {
+            await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
+            await _mailFolder.ExpungeAsync();
         }
 
         public async Task<UniqueId?> AppendMessage(MimeMessage mimeMessage, bool asNotSeen = false) {
             var flags = asNotSeen ? MessageFlags.None : MessageFlags.Seen;
+            await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             return await _mailFolder.AppendAsync(mimeMessage);
         }
 

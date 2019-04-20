@@ -101,6 +101,17 @@ namespace UnitTests {
             Assert.IsTrue(count > 0);
         }
 
+        [Test]
+        public async Task DeleteMailFiltered() {
+            var filter = new ImapFilter().SubjectContains("abcdefghijklmnopqrstuvwxyz");
+            //await Mail2DB.DeleteMessages(filter);
+        }
+
+        [Test]
+        public async Task ExpungeMail() {
+            //await Mail2DB.ExpungeMail();
+        }
+
         [TearDown]
         public void CleanUp() {
 
