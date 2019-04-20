@@ -1,4 +1,5 @@
-﻿using MimeKit;
+﻿using MailKit;
+using MimeKit;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,8 @@ namespace penCsharpener.Mail2DB {
     public class MailTypeConverter {
 
         public uint[] UIdsToExclude { get; set; }
+        private IList<UniqueId> _lastRetrievedUids;
+        public IList<uint> LastRetrievedUids => _lastRetrievedUids?.Select(x => x.Id).ToList();
 
         private readonly Client _client;
 
@@ -65,6 +68,12 @@ namespace penCsharpener.Mail2DB {
             using (var ms = new MemoryStream(mimeMessageBytes)) {
                 var mime = await MimeMessage.LoadAsync(ms);
                 return await mime.ToImapMessage(uId);
+            }
+        }
+
+        public async Task MarkLastUidsAsRead() {
+            if (_lastRetrievedUids != null && _lastRetrievedUids.Count > 0) {
+                await _client.MarkAsRead(_lastRetrievedUids);
             }
         }
     }
