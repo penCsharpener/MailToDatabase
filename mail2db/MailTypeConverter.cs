@@ -20,11 +20,11 @@ namespace penCsharpener.Mail2DB {
 
         public async Task<List<ImapMessage>> GetMessages(ImapFilter filter = null) {
             var results = new List<ImapMessage>();
-            var uIds = await _client.GetUIds(filter);
+            _lastRetrievedUids = await _client.GetUIds(filter);
             if (UIdsToExclude != null) {
-                uIds = uIds.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
+                _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
             }
-            var mimeMsgs = await _client.GetMessages(uIds);
+            var mimeMsgs = await _client.GetMessages(_lastRetrievedUids);
 
             foreach (var mime in mimeMsgs) {
                 var imapMsg = await mime.ToImapMessage();

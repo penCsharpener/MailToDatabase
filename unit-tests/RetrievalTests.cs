@@ -15,6 +15,11 @@ namespace UnitTests {
         private MailTypeConverter Converter { get; set; }
         private ImapFilter DefaultFilter { get; set; }
 
+        /// <summary>
+        /// Check the application folder for a file called 'CredentialHelper.Filename',
+        /// enter your credentials there to test against the imap server.
+        /// </summary>
+        /// <returns></returns>
         [SetUp]
         public async Task Setup() {
             if (!File.Exists(CredentialHelper.Filename)) {
