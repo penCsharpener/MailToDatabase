@@ -101,6 +101,7 @@ namespace UnitTests {
             Assert.IsTrue(count > 0);
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         [Test]
         public async Task DeleteMailFiltered() {
             var filter = new ImapFilter().SubjectContains("abcdefghijklmnopqrstuvwxyz");
@@ -111,6 +112,7 @@ namespace UnitTests {
         public async Task ExpungeMail() {
             //await Mail2DB.ExpungeMail();
         }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         [TearDown]
         public void CleanUp() {
