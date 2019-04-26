@@ -72,7 +72,7 @@ namespace UnitTests {
             var list = await Converter.GetMessages(DefaultFilter);
             var oneMsg = list.FirstOrDefault();
             if (oneMsg != null) {
-                var imapMsg = await MailTypeConverter.DeserializeMimeMessage(oneMsg.SerializedMessage, oneMsg.UId);
+                var imapMsg = await MailTypeConverter.DeserializeMimeMessage(oneMsg.MimeMessageBytes, oneMsg.UId);
                 Assert.True(oneMsg.Subject == imapMsg.Subject);
                 Console.WriteLine("Deserialized message subject: '" + imapMsg.Subject + "'");
             } else Assert.Fail("No message was retrieved. Nothing to deserialise.");
@@ -106,6 +106,10 @@ namespace UnitTests {
             Assert.IsTrue(count > 0);
         }
 
+        /// <summary>
+        /// Running these tests might be dangerous if you are using a personal email account.
+        /// </summary>
+        /// <returns></returns>
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         [Test]
         public async Task DeleteMailFiltered() {

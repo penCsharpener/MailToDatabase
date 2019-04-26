@@ -4,7 +4,6 @@ using MailKit.Search;
 using MimeKit;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +14,7 @@ namespace penCsharpener.Mail2DB {
         public string Password { get; set; }
         public string ServerURL { get; set; }
         public ushort Port { get; set; }
+        public string OpenedMailFolder => _mailFolder?.Name;
 
         private ImapClient _imapClient = new ImapClient();
         private IMailFolder _mailFolder;

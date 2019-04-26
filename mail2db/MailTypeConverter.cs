@@ -28,6 +28,7 @@ namespace penCsharpener.Mail2DB {
 
             foreach (var mime in mimeMsgs) {
                 var imapMsg = await mime.ToImapMessage();
+                imapMsg.MailFolder = _client.OpenedMailFolder;
                 results.Add(imapMsg);
             }
             return results;

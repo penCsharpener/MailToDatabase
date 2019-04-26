@@ -19,18 +19,30 @@ namespace penCsharpener.Mail2DB {
             return await mime.MimeMessage.ToImapMessage(mime.UniqueId.Id);
         }
 
+        public static MailContact[] AddContactType(this IEnumerable<MailContact> contacts, ContactTypes type) {
+            if (contacts == null || !contacts.Any()) {
+                return new MailContact[] {};
+            }
+            var list = new List<MailContact>();
+            foreach (var contact in contacts) {
+                contact.ContactType = type;
+                list.Add(contact);
+            }
+            return list.ToArray();
+        }
+
         public static async Task<ImapMessage> ToImapMessage(this MimeMessage mime, uint? uId = null) {
              var newImapMsg = new ImapMessage() {
-                SerializedMessage = await MailTypeConverter.SerializeMimeMessage(mime),
-                To = MailTypeConverter.ConvertContacts(mime.To.Mailboxes),
+                MimeMessageBytes = await MailTypeConverter.SerializeMimeMessage(mime),
+                To = MailTypeConverter.ConvertContacts(mime.To.Mailboxes).AddContactType(ContactTypes.To),
                 HasAttachments = mime.Attachments.Any(x => x.IsAttachment),
                 Attachments = await MailTypeConverter.ConvertAttachments(mime.Attachments),
                 Body = mime.HtmlBody,
                 BodyPlainText = mime.TextBody,
-                Cc = MailTypeConverter.ConvertContacts(mime.Cc.Mailboxes),
-                From = MailTypeConverter.ConvertContacts(mime.From.Mailboxes)[0],
+                Cc = MailTypeConverter.ConvertContacts(mime.Cc.Mailboxes).AddContactType(ContactTypes.Cc),
+                From = MailTypeConverter.ConvertContacts(mime.From.Mailboxes).AddContactType(ContactTypes.From).FirstOrDefault(),
                 InReplyToId = mime.InReplyTo,
-                MessageId = mime.MessageId,
+                MessageTextId = mime.MessageId,
                 ReceivedAtLocal = mime.Date.LocalDateTime,
                 ReceivedAtUTC = mime.Date.UtcDateTime,
                 Subject = mime.Subject,
