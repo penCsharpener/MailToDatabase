@@ -1,5 +1,6 @@
 ﻿using MailKit;
 using MimeKit;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,7 +25,7 @@ namespace penCsharpener.Mail2DB {
             if (UIdsToExclude != null) {
                 _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
             }
-            var mimeMsgs = await _client.GetMessages(_lastRetrievedUids);
+            var mimeMsgs = await _client.GetMessageUids(_lastRetrievedUids);
 
             foreach (var mime in mimeMsgs) {
                 var imapMsg = await mime.ToImapMessage();
@@ -32,6 +33,22 @@ namespace penCsharpener.Mail2DB {
                 results.Add(imapMsg);
             }
             return results;
+        }
+
+        public async Task GetMessagesAsync(Func<ImapMessage, Task> func, ImapFilter filter = null) {
+            _lastRetrievedUids = await _client.GetUIds(filter);
+            if (UIdsToExclude != null) {
+                _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
+            }
+            foreach (var uId in _lastRetrievedUids) {
+                var mimeUid = await _client.GetMessageUid(uId);
+                var imapMsg = await mimeUid.ToImapMessage();
+                if (imapMsg != null) {
+                    imapMsg.MailFolder = _client.OpenedMailFolder;
+                    await func?.Invoke(imapMsg);
+                }
+            }
+
         }
 
         public static MailContact[] ConvertContacts(IEnumerable<MailboxAddress> mailAddresses) {

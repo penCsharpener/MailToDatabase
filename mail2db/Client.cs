@@ -78,7 +78,7 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
-        public async Task<List<MimeMessageUId>> GetMessages(IList<UniqueId> uniqueIds) {
+        public async Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds) {
             using (cancel = new CancellationTokenSource()) {
 
                 _mailFolder ??= await Authenticate();
@@ -86,9 +86,22 @@ namespace penCsharpener.Mail2DB {
 
                 var list = new List<MimeMessageUId>();
                 foreach (var uid in uniqueIds) {
-                    list.Add(new MimeMessageUId(_mailFolder.GetMessage(uid), uid));
+                    list.Add(new MimeMessageUId(await _mailFolder.GetMessageAsync(uid), uid));
                 }
                 return list;
+            }
+        }
+
+        public async Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId) {
+            using (cancel = new CancellationTokenSource()) {
+                _mailFolder ??= await Authenticate();
+                _mailFolder.Open(FolderAccess.ReadOnly);
+
+                var mime = await _mailFolder.GetMessageAsync(uniqueId);
+                if (mime != null) {
+                    return new MimeMessageUId(mime, uniqueId);
+                }
+                return null;
             }
         }
 
