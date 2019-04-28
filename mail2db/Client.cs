@@ -4,6 +4,7 @@ using MailKit.Search;
 using MimeKit;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +21,7 @@ namespace penCsharpener.Mail2DB {
         private IMailFolder _mailFolder;
         public CancellationTokenSource cancel = new CancellationTokenSource();
         private string[] _mailFolders;
+        private IList<UniqueId> _lastRetrievedUIds;
 
         public int MailCountInFolder => _mailFolder?.Count ?? -1;
 
@@ -28,6 +30,26 @@ namespace penCsharpener.Mail2DB {
             ServerURL = credentials.ServerURL;
             Password = credentials.Password;
             Port = credentials.Port;
+        }
+
+        public async Task<int> GetTotalMailCount() {
+            _mailFolder = await Authenticate();
+            _mailFolder.Open(FolderAccess.ReadOnly);
+            return (await _mailFolder.SearchAsync(SearchQuery.All))?.Count ?? 0;
+        }
+
+        public async Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null) {
+            try {
+                if (!_imapClient.IsConnected) {
+                    await _imapClient.ConnectAsync(ServerURL, Port, true);
+                    _imapClient.AuthenticationMechanisms.Remove("XOAUTH");
+                    await _imapClient.AuthenticateAsync(EmailAddress, Password);
+                }
+            } catch (Exception ex) {
+                errorHandeling?.Invoke(ex);
+            }
+            var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
+            return personal.GetSubfolders(false, CancellationToken.None).Select(x => x.Name).ToList();
         }
 
         public async Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null) {
@@ -47,13 +69,13 @@ namespace penCsharpener.Mail2DB {
             var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
             foreach (var folder in personal.GetSubfolders(false, CancellationToken.None)) {
                 foreach (var name in _mailFolders) {
-                    if (folder.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0) {
-                        _mailFolder = folder;
+                    if (folder.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) {
                         return folder;
                     }
                 }
             }
-            return null;
+            _mailFolder = null;
+            throw new MailFolderNotFoundException($"Mail folder(s) '{string.Join(", ", _mailFolders)}' not found.");
         }
 
         /// <summary>
@@ -62,26 +84,29 @@ namespace penCsharpener.Mail2DB {
         /// the first that matches. Uses 'StringComparison.OrdinalIgnoreCase'.
         /// </summary>
         /// <param name="folderNames"></param>
-        public void SetMailFolder(params string[] folderNames) => _mailFolders = folderNames;
+        public void SetMailFolder(params string[] folderNames) {
+            _mailFolders = folderNames;
+        }
 
         public async Task<IList<UniqueId>> GetUIds(ImapFilter filter = null) {
             using (cancel = new CancellationTokenSource()) {
 
-                _mailFolder ??= await Authenticate();
+                _mailFolder = await Authenticate();
                 await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
                 if (filter == null) {
-                    return await _mailFolder.SearchAsync(new SearchQuery());
+                    _lastRetrievedUIds = await _mailFolder.SearchAsync(new SearchQuery());
                 } else {
-                    return await _mailFolder.SearchAsync(filter.ToSearchQuery());
+                    _lastRetrievedUIds = await _mailFolder.SearchAsync(filter.ToSearchQuery());
                 }
+                return _lastRetrievedUIds;
             }
         }
 
         public async Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds) {
             using (cancel = new CancellationTokenSource()) {
 
-                _mailFolder ??= await Authenticate();
+                _mailFolder = await Authenticate();
                 _mailFolder.Open(FolderAccess.ReadOnly);
 
                 var list = new List<MimeMessageUId>();
@@ -94,8 +119,8 @@ namespace penCsharpener.Mail2DB {
 
         public async Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId) {
             using (cancel = new CancellationTokenSource()) {
-                _mailFolder ??= await Authenticate();
-                _mailFolder.Open(FolderAccess.ReadOnly);
+                //_mailFolder = await Authenticate();
+                //_mailFolder.Open(FolderAccess.ReadOnly);
 
                 var mime = await _mailFolder.GetMessageAsync(uniqueId);
                 if (mime != null) {
@@ -107,7 +132,7 @@ namespace penCsharpener.Mail2DB {
 
         public async Task<MimeMessage> GetMessage(UniqueId uniqueId) {
             using (cancel = new CancellationTokenSource()) {
-                _mailFolder ??= await Authenticate();
+                _mailFolder = await Authenticate();
                 await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
                 return await _mailFolder.GetMessageAsync(uniqueId);
             }
