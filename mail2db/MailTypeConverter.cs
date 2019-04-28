@@ -45,7 +45,7 @@ namespace penCsharpener.Mail2DB {
                 var imapMsg = await mimeUid.ToImapMessage();
                 if (imapMsg != null) {
                     imapMsg.MailFolder = _client.OpenedMailFolder;
-                    await func?.Invoke(imapMsg);
+                    await func.Invoke(imapMsg);
                 }
             }
 
