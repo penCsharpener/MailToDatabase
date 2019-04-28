@@ -48,6 +48,8 @@ namespace penCsharpener.Mail2DB {
                 Subject = mime.Subject,
             };
 
+            newImapMsg.MessageTextId = mime.MessageId.IsNullOrEmpty() ? newImapMsg.MimeMessageBytes.ToSha256() : mime.MessageId;
+
             if (uId.HasValue) {
                 newImapMsg.UId = uId.Value;
             }
