@@ -113,7 +113,7 @@ namespace penCsharpener.Mail2DB {
         }
 
         public SearchQuery ToSearchQuery() {
-            return search;
+            return search ?? SearchQuery.All;
         }
     }
 }
