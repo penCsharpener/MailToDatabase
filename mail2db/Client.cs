@@ -204,9 +204,7 @@ namespace penCsharpener.Mail2DB {
 
         public async Task DeleteMessages(ImapFilter imapFilter) {
             var uids = await GetUIds(imapFilter);
-            var sums = await GetSummaries(uids);
-            await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
-            await _mailFolder.SetFlagsAsync(uids, MessageFlags.Deleted, false);
+            await DeleteMessages(uids);
         }
 
         public async Task ExpungeMail() {
