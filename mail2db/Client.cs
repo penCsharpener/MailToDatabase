@@ -49,11 +49,14 @@ namespace penCsharpener.Mail2DB {
 
         public int MailCountInFolder => _mailFolder?.Count ?? -1;
 
-        public Client(Credentials credentials) {
+        public Action<Exception> ErrorHandeling { get; set; }
+
+        public Client(Credentials credentials, Action<Exception> errorHandeling = null) {
             EmailAddress = credentials.EmailAddress;
             ServerURL = credentials.ServerURL;
             Password = credentials.Password;
             Port = credentials.Port;
+            ErrorHandeling = errorHandeling;
         }
 
         public async Task<int> GetTotalMailCount() {
@@ -62,7 +65,7 @@ namespace penCsharpener.Mail2DB {
             return (await _mailFolder.SearchAsync(SearchQuery.All))?.Count ?? 0;
         }
 
-        public async Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null) {
+        public async Task<IList<string>> GetMailFolders() {
             try {
                 if (!_imapClient.IsConnected) {
                     await _imapClient.ConnectAsync(ServerURL, Port, true);
@@ -70,13 +73,13 @@ namespace penCsharpener.Mail2DB {
                     await _imapClient.AuthenticateAsync(EmailAddress, Password);
                 }
             } catch (Exception ex) {
-                errorHandeling?.Invoke(ex);
+                ErrorHandeling?.Invoke(ex);
             }
             var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
             return personal.GetSubfolders(false, CancellationToken.None).Select(x => x.Name).ToList();
         }
 
-        public async Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null) {
+        public async Task<IMailFolder> Authenticate() {
             try {
                 if (!_imapClient.IsConnected) {
                     await _imapClient.ConnectAsync(ServerURL, Port, true);
@@ -84,7 +87,7 @@ namespace penCsharpener.Mail2DB {
                     await _imapClient.AuthenticateAsync(EmailAddress, Password);
                 }
             } catch (Exception ex) {
-                errorHandeling?.Invoke(ex);
+                ErrorHandeling?.Invoke(ex);
             }
             if (_mailFolders == null) {
                 _mailFolders = new[] { "inbox" };
