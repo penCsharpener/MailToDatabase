@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+using penCsharpener.Mail2DB.Contracts;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace penCsharpener.Mail2DB {
-    public class ImapAttachment {
+    public class ImapAttachment : IWriteAttachment {
         public string Filename { get; set; }
         public long Filesize => FileContent.LongLength;
         public byte[] FileContent { get; set; }

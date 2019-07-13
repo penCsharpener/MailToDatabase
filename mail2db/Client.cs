@@ -26,6 +26,7 @@ using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
+using penCsharpener.Mail2DB.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace penCsharpener.Mail2DB {
-    public class Client : IDisposable {
+    public class Client : IDisposable, IMail2DBClient, IRetrievalClient {
 
         public string EmailAddress { get; set; }
         public string Password { get; set; }
@@ -49,14 +50,11 @@ namespace penCsharpener.Mail2DB {
 
         public int MailCountInFolder => _mailFolder?.Count ?? -1;
 
-        public Action<Exception> ErrorHandeling { get; set; }
-
-        public Client(Credentials credentials, Action<Exception> errorHandeling = null) {
+        public Client(Credentials credentials) {
             EmailAddress = credentials.EmailAddress;
             ServerURL = credentials.ServerURL;
             Password = credentials.Password;
             Port = credentials.Port;
-            ErrorHandeling = errorHandeling;
         }
 
         public async Task<int> GetTotalMailCount() {
@@ -65,7 +63,7 @@ namespace penCsharpener.Mail2DB {
             return (await _mailFolder.SearchAsync(SearchQuery.All))?.Count ?? 0;
         }
 
-        public async Task<IList<string>> GetMailFolders() {
+        public async Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null) {
             try {
                 if (!_imapClient.IsConnected) {
                     await _imapClient.ConnectAsync(ServerURL, Port, true);
@@ -73,13 +71,13 @@ namespace penCsharpener.Mail2DB {
                     await _imapClient.AuthenticateAsync(EmailAddress, Password);
                 }
             } catch (Exception ex) {
-                ErrorHandeling?.Invoke(ex);
+                errorHandeling?.Invoke(ex);
             }
             var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
             return personal.GetSubfolders(false, CancellationToken.None).Select(x => x.Name).ToList();
         }
 
-        public async Task<IMailFolder> Authenticate() {
+        public async Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null) {
             try {
                 if (!_imapClient.IsConnected) {
                     await _imapClient.ConnectAsync(ServerURL, Port, true);
@@ -87,7 +85,7 @@ namespace penCsharpener.Mail2DB {
                     await _imapClient.AuthenticateAsync(EmailAddress, Password);
                 }
             } catch (Exception ex) {
-                ErrorHandeling?.Invoke(ex);
+                errorHandeling?.Invoke(ex);
             }
             if (_mailFolders == null) {
                 _mailFolders = new[] { "inbox" };
@@ -157,15 +155,15 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
-        public async Task<MimeMessage> GetMessage(UniqueId uniqueId) {
+        public async Task<MimeMessageUId> GetMessage(UniqueId uniqueId) {
             using (cancel = new CancellationTokenSource()) {
                 _mailFolder = await Authenticate();
                 await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
-                return await _mailFolder.GetMessageAsync(uniqueId);
+                return new MimeMessageUId(await _mailFolder.GetMessageAsync(uniqueId), uniqueId);
             }
         }
 
-        public async Task<IList<IMessageSummary>> GetAllSummaries() {
+        public async Task<IList<IMessageSummary>> GetSummaries() {
             var inbox = await Authenticate();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
             return await inbox.FetchAsync(0, -1, MessageSummaryItems.UniqueId

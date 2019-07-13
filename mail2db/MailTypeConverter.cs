@@ -24,6 +24,7 @@ SOFTWARE.
 
 using MailKit;
 using MimeKit;
+using penCsharpener.Mail2DB.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,9 +38,9 @@ namespace penCsharpener.Mail2DB {
         private IList<UniqueId> _lastRetrievedUids;
         public IList<uint> LastRetrievedUids => _lastRetrievedUids?.Select(x => x.Id).ToList();
 
-        private readonly Client _client;
+        private readonly IRetrievalClient _client;
 
-        public MailTypeConverter(Client client) {
+        public MailTypeConverter(IRetrievalClient client) {
             _client = client;
         }
 
@@ -113,10 +114,10 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
-        public async Task MarkLastUidsAsRead() {
-            if (_lastRetrievedUids != null && _lastRetrievedUids.Count > 0) {
-                await _client.MarkAsRead(_lastRetrievedUids);
-            }
-        }
+        //public async Task MarkLastUidsAsRead() {
+        //    if (_lastRetrievedUids != null && _lastRetrievedUids.Count > 0) {
+        //        await _client.MarkAsRead(_lastRetrievedUids);
+        //    }
+        //}
     }
 }

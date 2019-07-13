@@ -22,14 +22,6 @@ namespace UnitTests {
         /// <returns></returns>
         [SetUp]
         public async Task Setup() {
-            if (!File.Exists(CredentialHelper.Filename)) {
-                await CredentialHelper.WriteCredentials(new Credentials() {
-                    EmailAddress = "someRandomMailxyz1234@gmail.com",
-                    Password = "mySecret",
-                    Port = 993,
-                    ServerURL = "imap.gmail.com",
-                });
-            }
             Credentials = await CredentialHelper.GetCredentials();
             Mail2DB = new Client(Credentials);
             Converter = new MailTypeConverter(Mail2DB);
