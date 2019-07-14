@@ -34,7 +34,7 @@ using System.Threading.Tasks;
 namespace penCsharpener.Mail2DB {
     public class MailTypeConverter {
 
-        public uint[] UIdsToExclude { get; set; }
+        private uint[] _UIdsToExclude;
         private IList<UniqueId> _lastRetrievedUids;
         public IList<uint> LastRetrievedUids => _lastRetrievedUids?.Select(x => x.Id).ToList();
 
@@ -44,7 +44,7 @@ namespace penCsharpener.Mail2DB {
             _client = client;
         }
 
-        public async Task<List<ImapMessage>> GetMessages(ImapFilter filter = null) {
+        public async Task<List<ImapMessage>> GetMessages(ImapFilter filter = null, uint[] UIdsToExclude = null) {
             var results = new List<ImapMessage>();
             _lastRetrievedUids = await _client.GetUIds(filter);
             if (UIdsToExclude != null) {
@@ -60,7 +60,7 @@ namespace penCsharpener.Mail2DB {
             return results;
         }
 
-        public async Task GetMessagesAsync(Func<ImapMessage, Task> func, ImapFilter filter = null) {
+        public async Task GetMessagesAsync(Func<ImapMessage, Task> func, ImapFilter filter = null, uint[] UIdsToExclude = null) {
             _lastRetrievedUids = await _client.GetUIds(filter);
             if (UIdsToExclude != null) {
                 _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
@@ -114,10 +114,10 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
-        //public async Task MarkLastUidsAsRead() {
-        //    if (_lastRetrievedUids != null && _lastRetrievedUids.Count > 0) {
-        //        await _client.MarkAsRead(_lastRetrievedUids);
-        //    }
-        //}
+        public async Task MarkLastUidsAsRead(IMail2DBClient dbClient) {
+            if (_lastRetrievedUids != null && _lastRetrievedUids.Count > 0) {
+                await dbClient.MarkAsRead(_lastRetrievedUids);
+            }
+        }
     }
 }
