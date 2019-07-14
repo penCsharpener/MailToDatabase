@@ -6,7 +6,7 @@
     <LangVersion>preview</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>penCsharpener.Mail2DB</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>Matthias Müller</Authors>
     <Product>penCsharpener.Mail2DB</Product>
     <Description>library to retrieve mail from imap and convert it to database friendly format</Description>
@@ -14,6 +14,7 @@
     <Copyright>Matthias Müller</Copyright>
     <RepositoryUrl>https://github.com/penCsharpener/mail2db</RepositoryUrl>
     <PackageProjectUrl>https://github.com/penCsharpener/mail2db</PackageProjectUrl>
+    <AssemblyName>Mail2DB</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
