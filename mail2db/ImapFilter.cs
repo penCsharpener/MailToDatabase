@@ -34,6 +34,15 @@ namespace penCsharpener.Mail2DB {
 
         private SearchQuery search;
         private bool _defaultAnd;
+        private ImapFilterOperators _operator;
+        public ImapFilterOperators Operator {
+            get { return _operator; }
+            set {
+                _defaultAnd = _operator == ImapFilterOperators.And;
+                _operator = value; 
+            }
+        }
+
 
         public ImapFilter(bool defaultAND = true) {
             _defaultAnd = defaultAND;
@@ -117,7 +126,7 @@ namespace penCsharpener.Mail2DB {
         }
 
         public ImapFilter SentBetween(DateTime from, DateTime to) {
-            AndOrOr(SearchQuery.And(SearchQuery.SentAfter(from), SearchQuery.SentBefore(to)));
+            AndOrOr(SearchQuery.And(SearchQuery.SentSince(from), SearchQuery.SentBefore(to)));
             return this;
         }
 
@@ -138,6 +147,10 @@ namespace penCsharpener.Mail2DB {
 
         public SearchQuery ToSearchQuery() {
             return search ?? SearchQuery.All;
+        }
+
+        public override string ToString() {
+            return search.ToString();
         }
     }
 }
