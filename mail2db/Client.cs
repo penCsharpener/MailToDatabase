@@ -220,7 +220,12 @@ namespace penCsharpener.Mail2DB {
         }
 
         public async void Dispose() {
-            await _imapClient.DisconnectAsync(true);
+            if (_mailFolder != null) {
+                await _mailFolder.CloseAsync();
+            }
+            if (_imapClient?.IsConnected == true) {
+                await _imapClient.DisconnectAsync(true);
+            }
         }
     }
 }
