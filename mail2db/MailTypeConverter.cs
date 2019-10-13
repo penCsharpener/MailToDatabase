@@ -60,7 +60,10 @@ namespace penCsharpener.Mail2DB {
             return results;
         }
 
-        public async Task GetMessagesAsync(Func<ImapMessage, Task> func, ImapFilter filter = null, uint[] UIdsToExclude = null) {
+        public async Task GetMessagesAsync(Func<ImapMessage, Task> func,
+                                           ImapFilter filter = null,
+                                           uint[] UIdsToExclude = null) {
+
             _lastRetrievedUids = await _client.GetUIds(filter);
             if (UIdsToExclude != null) {
                 _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
@@ -73,7 +76,30 @@ namespace penCsharpener.Mail2DB {
                     await func.Invoke(imapMsg);
                 }
             }
+        }
 
+        public async Task GetMessagesAsync(Func<ImapMessage, AsyncRetrievalInfo, Task> func,
+                                           ImapFilter filter = null,
+                                           uint[] UIdsToExclude = null) {
+
+            _lastRetrievedUids = await _client.GetUIds(filter);
+            if (UIdsToExclude != null) {
+                _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
+            }
+
+            var asyncInfo = new AsyncRetrievalInfo() {
+                CountRetrievedMessages = _lastRetrievedUids.Count(),
+                UniqueIds = _lastRetrievedUids.Select(x => x.Id).ToArray(),
+            };
+
+            foreach (var uId in _lastRetrievedUids) {
+                var mimeUid = await _client.GetMessageUid(uId);
+                var imapMsg = await mimeUid.ToImapMessage();
+                if (imapMsg != null) {
+                    imapMsg.MailFolder = _client.OpenedMailFolder;
+                    await func.Invoke(imapMsg, asyncInfo);
+                }
+            }
         }
 
         public static MailContact[] ConvertContacts(IEnumerable<MailboxAddress> mailAddresses) {
