@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace penCsharpener.Mail2DB.Contracts {
+    /// <summary>
+    /// state changing methods that alter Imap account content
+    /// </summary>
     public interface IMail2DBClient {
 
         Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null);

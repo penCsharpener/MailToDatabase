@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace penCsharpener.Mail2DB.Contracts {
+    /// <summary>
+    /// All methods are not changing state of the imap account
+    /// </summary>
     public interface IRetrievalClient {
         string OpenedMailFolder { get; }
         Task<IList<IMessageSummary>> GetSummaries();
