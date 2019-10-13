@@ -45,9 +45,9 @@ namespace penCsharpener.Mail2DB {
                 return;
             }
             if (_defaultAnd) {
-                SearchQuery.And(search, query);
+                search = SearchQuery.And(search, query);
             } else {
-                SearchQuery.Or(search, query);
+                search = SearchQuery.Or(search, query);
             }
         }
 
