@@ -33,6 +33,7 @@ namespace penCsharpener.Mail2DB {
         public string Subject { get; set; }
         public string Body { get; set; }
         public string BodyPlainText { get; set; }
+        public bool IsHTML { get; set; }
         public bool HasAttachments { get; set; }
         public string MessageTextId { get; set; }
         public string InReplyToId { get; set; }

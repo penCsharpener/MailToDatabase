@@ -63,6 +63,7 @@ namespace penCsharpener.Mail2DB {
                 Attachments = await MailTypeConverter.ConvertAttachments(mime.Attachments),
                 Body = mime.HtmlBody,
                 BodyPlainText = mime.TextBody,
+                IsHTML = string.IsNullOrWhiteSpace(mime.HtmlBody),
                 Cc = MailTypeConverter.ConvertContacts(mime.Cc.Mailboxes).AddContactType(ContactTypes.Cc),
                 From = MailTypeConverter.ConvertContacts(mime.From.Mailboxes).AddContactType(ContactTypes.From).FirstOrDefault(),
                 InReplyToId = mime.InReplyTo,
