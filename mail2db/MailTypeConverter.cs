@@ -88,15 +88,16 @@ namespace penCsharpener.Mail2DB {
             }
 
             var asyncInfo = new AsyncRetrievalInfo() {
-                CountRetrievedMessages = _lastRetrievedUids.Count(),
+                CountRetrievedMessages = _lastRetrievedUids.Count,
                 UniqueIds = _lastRetrievedUids.Select(x => x.Id).ToArray(),
             };
 
-            foreach (var uId in _lastRetrievedUids) {
-                var mimeUid = await _client.GetMessageUid(uId);
+            for (int i = 0; i < _lastRetrievedUids.Count; i++) {
+                var mimeUid = await _client.GetMessageUid(_lastRetrievedUids[i]);
                 var imapMsg = await mimeUid.ToImapMessage();
                 if (imapMsg != null) {
                     imapMsg.MailFolder = _client.OpenedMailFolder;
+                    asyncInfo.Index = i;
                     await func.Invoke(imapMsg, asyncInfo);
                 }
             }
