@@ -37,7 +37,7 @@ namespace penCsharpener.Mail2DB {
         public string FullPath { get; set; }
         public FileInfo FileInfo => GetFileInfo();
 
-        private FileInfo GetFileInfo() {
+        protected FileInfo GetFileInfo() {
             if (File.Exists(FullPath)) {
                 return new FileInfo(FullPath);
             }
@@ -52,7 +52,7 @@ namespace penCsharpener.Mail2DB {
         /// <param name="filename"></param>
         /// <param name="overwrite"></param>
         /// <returns></returns>
-        public async Task WriteFileAsync(string path,
+        public virtual async Task WriteFileAsync(string path,
                                    FileSavingOption options = null,
                                    string filename = null,
                                    bool overwrite = false) {
