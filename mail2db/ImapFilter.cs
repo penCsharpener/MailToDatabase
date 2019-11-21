@@ -125,6 +125,16 @@ namespace penCsharpener.Mail2DB {
             return this;
         }
 
+        public ImapFilter SentSince(DateTime since) {
+            AndOrOr(SearchQuery.SentSince(since));
+            return this;
+        }
+
+        public ImapFilter SentBefore(DateTime before) {
+            AndOrOr(SearchQuery.SentBefore(before));
+            return this;
+        }
+
         public ImapFilter SentBetween(DateTime from, DateTime to) {
             AndOrOr(SearchQuery.And(SearchQuery.SentSince(from), SearchQuery.SentBefore(to)));
             return this;
@@ -135,6 +145,20 @@ namespace penCsharpener.Mail2DB {
             return this;
         }
 
+        public ImapFilter DeliveredAfter(DateTime after) {
+            AndOrOr(SearchQuery.DeliveredAfter(after));
+            return this;
+        }
+
+        public ImapFilter DeliveredBefore(DateTime before) {
+            AndOrOr(SearchQuery.DeliveredBefore(before));
+            return this;
+        }
+
+        public ImapFilter MessageContains(string text) {
+            AndOrOr(SearchQuery.MessageContains(text));
+            return this;
+        }
         public ImapFilter And(ImapFilter imapFilter) {
             search.And(imapFilter.ToSearchQuery());
             return this;
