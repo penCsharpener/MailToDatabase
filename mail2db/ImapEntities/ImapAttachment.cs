@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 namespace penCsharpener.Mail2DB {
     public class ImapAttachment : IWriteAttachment {
         public string Filename { get; set; }
-        public long Filesize => FileContent.LongLength;
+        public long Filesize => FileContent?.LongLength ?? 0;
         public byte[] FileContent { get; set; }
         public string Sha256Hash => FileContent?.ToSha256();
         public string Subfolder { get; protected set; }
