@@ -159,6 +159,13 @@ namespace penCsharpener.Mail2DB {
             AndOrOr(SearchQuery.MessageContains(text));
             return this;
         }
+
+        internal int LimitResults { get; set; }
+        public ImapFilter Limit(int limit) {
+            LimitResults = limit;
+            return this;
+        }
+
         public ImapFilter And(ImapFilter imapFilter) {
             search.And(imapFilter.ToSearchQuery());
             return this;

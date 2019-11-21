@@ -50,6 +50,9 @@ namespace penCsharpener.Mail2DB {
             if (UIdsToExclude != null) {
                 _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
             }
+            if (filter?.LimitResults > 0) {
+                _lastRetrievedUids = _lastRetrievedUids.Take(filter.LimitResults).ToList();
+            }
             var mimeMsgs = await _client.GetMessageUids(_lastRetrievedUids);
 
             foreach (var mime in mimeMsgs) {
@@ -68,6 +71,9 @@ namespace penCsharpener.Mail2DB {
             if (UIdsToExclude != null) {
                 _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
             }
+            if (filter?.LimitResults > 0) {
+                _lastRetrievedUids = _lastRetrievedUids.Take(filter.LimitResults).ToList();
+            }
             foreach (var uId in _lastRetrievedUids) {
                 var mimeUid = await _client.GetMessageUid(uId);
                 var imapMsg = await mimeUid.ToImapMessage();
@@ -85,6 +91,9 @@ namespace penCsharpener.Mail2DB {
             _lastRetrievedUids = await _client.GetUIds(filter);
             if (UIdsToExclude != null) {
                 _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
+            }
+            if (filter?.LimitResults > 0) {
+                _lastRetrievedUids = _lastRetrievedUids.Take(filter.LimitResults).ToList();
             }
 
             var asyncInfo = new AsyncRetrievalInfo() {
