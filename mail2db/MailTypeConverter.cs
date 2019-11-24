@@ -82,8 +82,7 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
-        public async Task GetMessagesAsync(Func<ImapMessage,
-                                           AsyncRetrievalInfo, Task> func,
+        public async Task GetMessagesAsync(Func<ImapMessage, AsyncRetrievalInfo, Task> func,
                                            ImapFilter filter = null,
                                            uint[] UIdsToExclude = null) {
 
@@ -101,6 +100,19 @@ namespace penCsharpener.Mail2DB {
                     imapMsg.MailFolder = _client.OpenedMailFolder;
                     asyncInfo.Index = i;
                     await func.Invoke(imapMsg, asyncInfo);
+                }
+            }
+        }
+
+        public async IAsyncEnumerable<ImapMessage> GetMessagesAsync(ImapFilter filter = null,
+                                                                    uint[] UIdsToExclude = null) {
+            await FilterAndExclude(filter, UIdsToExclude);
+            for (int i = 0; i < _lastRetrievedUids.Count; i++) {
+                var mimeUid = await _client.GetMessageUid(_lastRetrievedUids[i]);
+                var imapMsg = await mimeUid.ToImapMessage();
+                if (imapMsg != null) {
+                    imapMsg.MailFolder = _client.OpenedMailFolder;
+                    yield return imapMsg;
                 }
             }
         }
