@@ -34,7 +34,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace penCsharpener.Mail2DB {
-    public class Client : IDisposable, IMail2DBClient, IRetrievalClient {
+    public class Client : IMail2DBClient, IRetrievalClient {
 
         public string EmailAddress { get; }
         public string Password { get; }
@@ -52,6 +52,7 @@ namespace penCsharpener.Mail2DB {
                                                               //| MessageSummaryItems.PreviewText
                                                               | MessageSummaryItems.References
                                                               | MessageSummaryItems.Envelope;
+        
         private ImapClient _imapClient = new ImapClient();
         private IMailFolder _mailFolder;
         public CancellationTokenSource cancel = new CancellationTokenSource();
@@ -231,13 +232,36 @@ namespace penCsharpener.Mail2DB {
             return await _mailFolder.AppendAsync(mimeMessage);
         }
 
-        public async void Dispose() {
-            if (_mailFolder != null) {
-                await _mailFolder.CloseAsync();
-            }
-            if (_imapClient?.IsConnected == true) {
-                await _imapClient.DisconnectAsync(true);
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected async virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    // TODO: dispose managed state (managed objects).
+                    if (_mailFolder != null) {
+                        await _mailFolder.CloseAsync();
+                    }
+                    if (_imapClient?.IsConnected == true) {
+                        await _imapClient.DisconnectAsync(true);
+                        _imapClient.Dispose();
+                    }
+                    cancel.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+                _lastRetrievedUIds = null;
+                _mailFolder = null;
+                _mailFolders = null;
+
+                disposedValue = true;
             }
         }
+
+        public void Dispose() {
+            Dispose(true);
+        }
+        #endregion
     }
 }

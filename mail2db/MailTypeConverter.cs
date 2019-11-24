@@ -32,9 +32,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace penCsharpener.Mail2DB {
-    public class MailTypeConverter {
+    public class MailTypeConverter : IDisposable {
 
-        private uint[] _UIdsToExclude;
         private IList<UniqueId> _lastRetrievedUids;
         public IList<uint> LastRetrievedUids => _lastRetrievedUids?.Select(x => x.Id).ToList();
 
@@ -44,15 +43,10 @@ namespace penCsharpener.Mail2DB {
             _client = client;
         }
 
-        public async Task<List<ImapMessage>> GetMessages(ImapFilter filter = null, uint[] UIdsToExclude = null) {
+        public async Task<List<ImapMessage>> GetMessages(ImapFilter filter = null,
+                                                         uint[] UIdsToExclude = null) {
             var results = new List<ImapMessage>();
-            _lastRetrievedUids = await _client.GetUIds(filter);
-            if (UIdsToExclude != null) {
-                _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
-            }
-            if (filter?.LimitResults > 0) {
-                _lastRetrievedUids = _lastRetrievedUids.Take(filter.LimitResults).ToList();
-            }
+            await FilterAndExclude(filter, UIdsToExclude);
             var mimeMsgs = await _client.GetMessageUids(_lastRetrievedUids);
 
             foreach (var mime in mimeMsgs) {
@@ -66,14 +60,7 @@ namespace penCsharpener.Mail2DB {
         public async Task GetMessagesAsync(Func<ImapMessage, Task> func,
                                            ImapFilter filter = null,
                                            uint[] UIdsToExclude = null) {
-
-            _lastRetrievedUids = await _client.GetUIds(filter);
-            if (UIdsToExclude != null) {
-                _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
-            }
-            if (filter?.LimitResults > 0) {
-                _lastRetrievedUids = _lastRetrievedUids.Take(filter.LimitResults).ToList();
-            }
+            await FilterAndExclude(filter, UIdsToExclude);
             foreach (var uId in _lastRetrievedUids) {
                 var mimeUid = await _client.GetMessageUid(uId);
                 var imapMsg = await mimeUid.ToImapMessage();
@@ -84,10 +71,8 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
-        public async Task GetMessagesAsync(Func<ImapMessage, AsyncRetrievalInfo, Task> func,
-                                           ImapFilter filter = null,
-                                           uint[] UIdsToExclude = null) {
-
+        private async Task FilterAndExclude(ImapFilter filter,
+                                            uint[] UIdsToExclude) {
             _lastRetrievedUids = await _client.GetUIds(filter);
             if (UIdsToExclude != null) {
                 _lastRetrievedUids = _lastRetrievedUids.Where(x => !UIdsToExclude.Contains(x.Id)).ToList();
@@ -95,6 +80,14 @@ namespace penCsharpener.Mail2DB {
             if (filter?.LimitResults > 0) {
                 _lastRetrievedUids = _lastRetrievedUids.Take(filter.LimitResults).ToList();
             }
+        }
+
+        public async Task GetMessagesAsync(Func<ImapMessage,
+                                           AsyncRetrievalInfo, Task> func,
+                                           ImapFilter filter = null,
+                                           uint[] UIdsToExclude = null) {
+
+            await FilterAndExclude(filter, UIdsToExclude);
 
             var asyncInfo = new AsyncRetrievalInfo() {
                 CountRetrievedMessages = _lastRetrievedUids.Count,
@@ -155,5 +148,28 @@ namespace penCsharpener.Mail2DB {
                 await dbClient.MarkAsRead(_lastRetrievedUids);
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    // TODO: dispose managed state (managed objects).
+                    _client.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+                _lastRetrievedUids = null;
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+        }
+        #endregion
     }
 }
