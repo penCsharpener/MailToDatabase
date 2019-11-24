@@ -42,6 +42,16 @@ namespace penCsharpener.Mail2DB {
         public ushort Port { get; set; }
         public string OpenedMailFolder => _mailFolder?.Name;
 
+        private const MessageSummaryItems MessageSummaryOptions = MessageSummaryItems.UniqueId
+                                                              | MessageSummaryItems.Size
+                                                              | MessageSummaryItems.Flags
+                                                              //| MessageSummaryItems.BodyStructure
+                                                              //| MessageSummaryItems.GMailLabels
+                                                              //| MessageSummaryItems.GMailMessageId
+                                                              //| MessageSummaryItems.InternalDate
+                                                              //| MessageSummaryItems.PreviewText
+                                                              | MessageSummaryItems.References
+                                                              | MessageSummaryItems.Envelope;
         private ImapClient _imapClient = new ImapClient();
         private IMailFolder _mailFolder;
         public CancellationTokenSource cancel = new CancellationTokenSource();
@@ -166,31 +176,23 @@ namespace penCsharpener.Mail2DB {
         public async Task<IList<IMessageSummary>> GetSummaries() {
             var inbox = await Authenticate();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
-            return await inbox.FetchAsync(0, -1, MessageSummaryItems.UniqueId
-                                               | MessageSummaryItems.Size
-                                               | MessageSummaryItems.Flags
-                                               //| MessageSummaryItems.BodyStructure
-                                               //| MessageSummaryItems.GMailLabels
-                                               //| MessageSummaryItems.GMailMessageId
-                                               //| MessageSummaryItems.InternalDate
-                                               //| MessageSummaryItems.PreviewText
-                                               | MessageSummaryItems.References
-                                               | MessageSummaryItems.Envelope);
+            return await inbox.FetchAsync(0, -1, MessageSummaryOptions);
         }
 
         public async Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids) {
             var inbox = await Authenticate();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
-            return await inbox.FetchAsync(uids, MessageSummaryItems.UniqueId
-                                               | MessageSummaryItems.Size
-                                               | MessageSummaryItems.Flags
-                                               //| MessageSummaryItems.BodyStructure
-                                               //| MessageSummaryItems.GMailLabels
-                                               //| MessageSummaryItems.GMailMessageId
-                                               //| MessageSummaryItems.InternalDate
-                                               //| MessageSummaryItems.PreviewText
-                                               | MessageSummaryItems.References
-                                               | MessageSummaryItems.Envelope);
+            return await inbox.FetchAsync(uids, MessageSummaryOptions);
+        }
+
+        public async Task<IList<IMessageSummary>> GetSummaries(ImapFilter filter, uint[] uidsToExclude = null) {
+            var inbox = await Authenticate();
+            await inbox.OpenAsync(FolderAccess.ReadOnly);
+            _lastRetrievedUIds = await GetUIds(filter);
+            if (uidsToExclude?.Length > 0) {
+                _lastRetrievedUIds = _lastRetrievedUIds.Where(x => !uidsToExclude.Contains(x.Id)).ToArray();
+            }
+            return await inbox.FetchAsync(_lastRetrievedUIds, MessageSummaryOptions);
         }
 
         public async Task MarkAsRead(IList<UniqueId> uids) {

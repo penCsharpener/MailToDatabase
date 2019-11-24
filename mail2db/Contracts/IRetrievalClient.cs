@@ -11,6 +11,7 @@ namespace penCsharpener.Mail2DB.Contracts {
         string OpenedMailFolder { get; }
         Task<IList<IMessageSummary>> GetSummaries();
         Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids);
+        Task<IList<IMessageSummary>> GetSummaries(ImapFilter filter, uint[] uidsToExclude = null);
         Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null);
         Task<MimeMessageUId> GetMessage(UniqueId uniqueId);
         Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId);
