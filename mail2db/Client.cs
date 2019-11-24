@@ -36,10 +36,10 @@ using System.Threading.Tasks;
 namespace penCsharpener.Mail2DB {
     public class Client : IDisposable, IMail2DBClient, IRetrievalClient {
 
-        public string EmailAddress { get; set; }
-        public string Password { get; set; }
-        public string ServerURL { get; set; }
-        public ushort Port { get; set; }
+        public string EmailAddress { get; }
+        public string Password { get; }
+        public string ServerURL { get; }
+        public ushort Port { get; }
         public string OpenedMailFolder => _mailFolder?.Name;
 
         private const MessageSummaryItems MessageSummaryOptions = MessageSummaryItems.UniqueId
@@ -65,6 +65,16 @@ namespace penCsharpener.Mail2DB {
             ServerURL = credentials.ServerURL;
             Password = credentials.Password;
             Port = credentials.Port;
+        }
+
+        public Client(string usernameOrEmailAddress,
+                      string serverURL,
+                      string password,
+                      ushort port) {
+            EmailAddress = usernameOrEmailAddress;
+            ServerURL = serverURL;
+            Password = password;
+            Port = port;
         }
 
         public async Task<int> GetTotalMailCount() {
