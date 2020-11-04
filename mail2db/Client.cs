@@ -113,13 +113,15 @@ namespace penCsharpener.Mail2DB {
             }
 
             var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
+
             foreach (var folder in personal.GetSubfolders(false, CancellationToken.None)) {
                 foreach (var name in _mailFolders) {
-                    if (folder.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) {
+                    if (folder != null && folder.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) {
                         return folder;
                     }
                 }
             }
+
             _mailFolder = null;
             throw new MailFolderNotFoundException($"Mail folder(s) '{string.Join(", ", _mailFolders)}' not found.");
         }
