@@ -123,7 +123,13 @@ namespace MailToDatabase
             return this;
         }
 
-        public ImapFilter Uids(IList<uint> Uids)
+        public ImapFilter Uids(params uint[] Uids)
+        {
+            AndOrOr(SearchQuery.Uids(Uids.Select(x => new UniqueId(x)).ToList()));
+            return this;
+        }
+
+        public ImapFilter Uids(IEnumerable<uint> Uids)
         {
             AndOrOr(SearchQuery.Uids(Uids.Select(x => new UniqueId(x)).ToList()));
             return this;

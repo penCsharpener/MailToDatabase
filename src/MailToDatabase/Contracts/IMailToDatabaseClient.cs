@@ -9,7 +9,7 @@ namespace MailToDatabase.Contracts
     /// <summary>
     /// state changing methods that alter Imap account content
     /// </summary>
-    public interface IMail2DBClient
+    public interface IMailToDatabaseClient
     {
         Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null);
         Task ExpungeMail();

@@ -1,6 +1,5 @@
 using FluentAssertions;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,14 +12,16 @@ namespace MailToDatabase.Tests.Integration
     public class RetrievalTests
     {
 
-        private Credentials Credentials { get; set; }
-        private Client Mail2DB { get; set; }
-        private MailTypeConverter Converter { get; set; }
-        private ImapFilter DefaultFilter { get; set; }
+        private Credentials Credentials { get; }
+        private RetrievalConfiguration RetrievalConfiguration { get; }
+        private Client Mail2DB { get; }
+        private MailTypeConverter Converter { get; }
+        private ImapFilter DefaultFilter { get; }
 
         public RetrievalTests()
         {
-            Credentials = CredentialsHelper.GetCredentials();
+            Credentials = ConfigHelper.GetCredentials();
+            RetrievalConfiguration = ConfigHelper.GetRetrievalConfiguration();
             Mail2DB = new Client(Credentials);
             Converter = new MailTypeConverter(Mail2DB);
             DefaultFilter = new ImapFilter().NotSeen(); // younger than two days
@@ -37,7 +38,7 @@ namespace MailToDatabase.Tests.Integration
         [Fact]
         public async Task FilterDeliveredBetween()
         {
-            var filter = new ImapFilter().DeliveredBetween(new DateTime(2018, 5, 20), new DateTime(2018, 5, 25));
+            var filter = new ImapFilter().DeliveredBetween(RetrievalConfiguration.RetrieveFrom, RetrievalConfiguration.RetrieveTo);
             var list = await Mail2DB.GetUIds(filter);
 
             list?.Count.Should().BeGreaterThan(0);
@@ -46,7 +47,7 @@ namespace MailToDatabase.Tests.Integration
         [Fact]
         public async Task FilterUids()
         {
-            var filter = new ImapFilter().Uids(new List<uint>() { 15732, 17940, 4005, 6435, 2935, 11064 });
+            var filter = new ImapFilter().Uids(RetrievalConfiguration.UidsToRetrieve);
             var list = await Mail2DB.GetUIds(filter);
 
             list?.Count.Should().BeGreaterThan(0);
@@ -55,7 +56,7 @@ namespace MailToDatabase.Tests.Integration
         [Fact]
         public async Task TestConversion()
         {
-            var list = await Converter.GetMessages(DefaultFilter);
+            var list = await Converter.GetMessages(new ImapFilter().Uids(RetrievalConfiguration.UidWithAttachments));
 
             Console.WriteLine("{0} messages converted.", list.Count);
             list?.Count.Should().BeGreaterThan(0);
@@ -64,7 +65,7 @@ namespace MailToDatabase.Tests.Integration
         [Fact]
         public async Task Deserialisation()
         {
-            var list = await Converter.GetMessages(DefaultFilter);
+            var list = await Converter.GetMessages(new ImapFilter().Uids(RetrievalConfiguration.UidWithAttachments));
             var oneMsg = list.FirstOrDefault();
 
             oneMsg.Should().NotBeNull();
