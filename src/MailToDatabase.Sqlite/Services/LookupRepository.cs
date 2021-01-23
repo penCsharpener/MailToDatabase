@@ -41,7 +41,7 @@ namespace MailToDatabase.Sqlite.Services
 
         public async Task<IList<ExistingMail>> GetExistingUidsAsync(string mailFolder)
         {
-            return await _dbContext.Emails.Where(x => x.FolderName == mailFolder)
+            return await _dbContext.Emails.Where(x => x.FolderName.ToUpper() == mailFolder.ToUpper())
                 .Select(x => new ExistingMail((uint)x.UniqueId, x.FileName))
                 .ToListAsync();
         }
@@ -50,7 +50,7 @@ namespace MailToDatabase.Sqlite.Services
         {
             var sha = _hashProvider.ToSha256(imapMessage.MimeMessageBytes);
             var timestamp = imapMessage.ReceivedAtUTC.ToString("yyyyMMddHHmmss");
-            var filename = $"{timestamp}_{imapMessage.From.EmailAddress}_{sha.Substring(0, 16)}";
+            var filename = $"{timestamp}_{imapMessage.From?.EmailAddress ?? "NULL"}_{sha.Substring(0, 16)}";
 
             var attachments = imapMessage.Attachments.Select(x => new Attachment
             {
@@ -65,7 +65,7 @@ namespace MailToDatabase.Sqlite.Services
                 Sha256 = sha,
                 FileName = filename,
                 FolderName = imapMessage.MailFolder,
-                FromAddress = imapMessage.From.EmailAddress,
+                FromAddress = imapMessage.From?.EmailAddress ?? "NULL",
                 ReceivedAt = imapMessage.ReceivedAtUTC,
                 UniqueId = Convert.ToInt32(imapMessage.UId),
                 Attachments = attachments
