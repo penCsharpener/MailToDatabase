@@ -10,7 +10,7 @@ namespace MailToDatabase.Sqlite.Services
         {
             using var hash = SHA1.Create();
             var sha1 = hash.ComputeHash(bytes);
-            var hex = BitConverter.ToString(sha1).Replace("-", "");
+            var hex = BitConverter.ToString(sha1).Replace("-", "").ToLower();
 
             return hex;
         }
@@ -19,7 +19,7 @@ namespace MailToDatabase.Sqlite.Services
         {
             using var hash = SHA256.Create();
             var sha256 = hash.ComputeHash(bytes);
-            var hex = BitConverter.ToString(sha256).Replace("-", "");
+            var hex = BitConverter.ToString(sha256).Replace("-", "").ToLower();
 
             return hex;
         }

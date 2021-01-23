@@ -9,5 +9,6 @@ namespace MailToDatabase.Sqlite.Configuration
         public DateTime DelieveredAfter { get; set; }
         public DateTime DelieveredBefore { get; set; }
 
+        public Credentials Credentials { get; set; }
     }
 }

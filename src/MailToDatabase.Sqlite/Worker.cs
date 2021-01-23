@@ -23,15 +23,23 @@ namespace MailToDatabase.Sqlite
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                using (var scope = _scopeFactory.CreateScope())
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    var imapService = scope.ServiceProvider.GetRequiredService<IImapService>();
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var imapService = scope.ServiceProvider.GetRequiredService<IImapService>();
 
-                    await imapService.GetAllMails();
+                        await imapService.GetAllMailsAsync();
+                    }
+
+                    await Task.Delay(_settings.RetrievalIntervalMinutes * 60 * 1000, stoppingToken);
                 }
-                await Task.Delay(_settings.RetrievalIntervalMinutes * 60 * 1000, stoppingToken);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
             }
         }
     }

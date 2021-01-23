@@ -27,12 +27,17 @@ namespace MailToDatabase.Sqlite.Services
             _logger = logger;
         }
 
-        public async Task GetAllMails()
+        public async Task GetAllMailsAsync()
         {
             var uIds = await _retrievalClient.GetUIds(_settings.ToIntervalFilter());
             var existingMails = await _repo.GetExistingUidsAsync("inbox");
             var existingUids = existingMails.Select(x => x.UniqueId).ToList();
-            var uIdFilter = new ImapFilter().Uids(uIds.Where(x => !existingUids.Contains(x.Id)).ToList());
+            ImapFilter uIdFilter = new();
+
+            if (existingUids.Count > 0)
+            {
+                uIdFilter = new ImapFilter().Uids(uIds.Where(x => !existingUids.Contains(x.Id)).ToList());
+            }
 
             await foreach (var imapMessage in _mailConverter.GetMessagesAsync(uIdFilter))
             {

@@ -41,7 +41,7 @@ namespace MailToDatabase.Sqlite.Services
 
         public async Task<IList<ExistingMail>> GetExistingUidsAsync(string mailFolder)
         {
-            return await _dbContext.Emails.Where(x => x.FolderName.Equals(mailFolder, StringComparison.OrdinalIgnoreCase))
+            return await _dbContext.Emails.Where(x => x.FolderName == mailFolder)
                 .Select(x => new ExistingMail((uint)x.UniqueId, x.FileName))
                 .ToListAsync();
         }
@@ -59,7 +59,7 @@ namespace MailToDatabase.Sqlite.Services
 
             var email = new Email
             {
-                Body = imapMessage.Body,
+                Body = string.IsNullOrEmpty(imapMessage.Body) ? imapMessage.BodyPlainText : imapMessage.Body,
                 Subject = imapMessage.Subject,
                 AttachmentCount = imapMessage.Attachments.Length,
                 Sha256 = sha,

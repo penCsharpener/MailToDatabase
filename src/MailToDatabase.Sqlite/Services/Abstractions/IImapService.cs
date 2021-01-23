@@ -4,6 +4,6 @@ namespace MailToDatabase.Sqlite.Services.Abstractions
 {
     public interface IImapService
     {
-        Task GetAllMails();
+        Task GetAllMailsAsync();
     }
 }

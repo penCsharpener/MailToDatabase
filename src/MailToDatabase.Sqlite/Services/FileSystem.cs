@@ -23,7 +23,7 @@ namespace MailToDatabase.Sqlite.Services
         {
             try
             {
-                var fullPath = Path.Combine(_appSettings.DownloadDirectory, fileName, ".ime");
+                var fullPath = Path.Combine(_appSettings.DownloadDirectory, fileName + ".ime");
 
                 if (!File.Exists(fullPath))
                 {
