@@ -3,27 +3,45 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mail2db", "mail2db\mail2db.csproj", "{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mail2db", "src\mail2db\mail2db.csproj", "{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "unit-tests", "unit-tests\unit-tests.csproj", "{AAEDCF39-BF09-4B0E-B406-75F1C454436F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1B1884F4-38E1-43A3-A079-7BE9E240C0E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{996328E9-C04C-460A-913B-7C2B0F01F867}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailToDatabase.Tests", "tests\MailToDatabase.Tests\MailToDatabase.Tests.csproj", "{E6F765FF-05C8-4B38-AD28-86B23EC91138}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Debug|x64.ActiveCfg = Debug|x64
+		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Debug|x64.Build.0 = Debug|x64
 		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AAEDCF39-BF09-4B0E-B406-75F1C454436F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AAEDCF39-BF09-4B0E-B406-75F1C454436F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AAEDCF39-BF09-4B0E-B406-75F1C454436F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AAEDCF39-BF09-4B0E-B406-75F1C454436F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Release|x64.ActiveCfg = Release|x64
+		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}.Release|x64.Build.0 = Release|x64
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Debug|x64.Build.0 = Debug|Any CPU
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Release|x64.ActiveCfg = Release|Any CPU
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CBDA633D-2BA6-426C-B952-02AFBA2A0C55} = {1B1884F4-38E1-43A3-A079-7BE9E240C0E6}
+		{E6F765FF-05C8-4B38-AD28-86B23EC91138} = {996328E9-C04C-460A-913B-7C2B0F01F867}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FDE3595E-CC51-4146-9C95-14EDE717F35A}
