@@ -27,8 +27,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace penCsharpener.Mail2DB {
-    public class ImapAttachment : IWriteAttachment {
+namespace penCsharpener.Mail2DB
+{
+    public class ImapAttachment : IWriteAttachment
+    {
         public string Filename { get; set; }
         public long Filesize => FileContent?.LongLength ?? 0;
         public byte[] FileContent { get; set; }
@@ -37,15 +39,17 @@ namespace penCsharpener.Mail2DB {
         public string FullPath { get; set; }
         public FileInfo FileInfo => GetFileInfo();
 
-        protected FileInfo GetFileInfo() {
-            if (File.Exists(FullPath)) {
+        protected FileInfo GetFileInfo()
+        {
+            if (File.Exists(FullPath))
+            {
                 return new FileInfo(FullPath);
             }
             return null;
         }
 
         /// <summary>
-        /// Writes the byte[] FileContent to the specified path. 
+        /// Writes the byte[] FileContent to the specified path.
         /// If no filename is set the property Filename will be used.
         /// </summary>
         /// <param name="path"></param>
@@ -55,10 +59,13 @@ namespace penCsharpener.Mail2DB {
         public virtual async Task WriteFileAsync(string path,
                                    FileSavingOption options = null,
                                    string filename = null,
-                                   bool overwrite = false) {
+                                   bool overwrite = false)
+        {
 
-            if (options != null) {
-                switch (options.Option) {
+            if (options != null)
+            {
+                switch (options.Option)
+                {
                     case FileSavingOptions.SavingTimestamp:
                         Subfolder = DateTime.Now.ToString("yyyy-MM-dd_HHmmss_ff");
                         break;
@@ -72,7 +79,8 @@ namespace penCsharpener.Mail2DB {
             }
 
             // check if path is really a dir and not a filepath
-            if (File.Exists(path)) {
+            if (File.Exists(path))
+            {
                 // if the path is a filepath just take its directory
                 path = Path.GetDirectoryName(path);
             }
@@ -80,18 +88,21 @@ namespace penCsharpener.Mail2DB {
             var fullPath = Path.Combine(path, Subfolder);
 
             // create path if it doesn't exist yet
-            if (!Directory.Exists(fullPath)) {
+            if (!Directory.Exists(fullPath))
+            {
                 Directory.CreateDirectory(fullPath);
             }
 
             filename = filename.IsNullOrEmpty() ? Filename : filename;
 
             var fullFilename = Path.Combine(fullPath, filename);
-            if (!File.Exists(fullFilename) || overwrite) {
+            if (!File.Exists(fullFilename) || overwrite)
+            {
 
                 using (var fs = new FileStream(fullFilename, FileMode.Create,
                                                FileAccess.Write, FileShare.None,
-                                               bufferSize: 4096, useAsync: true)) {
+                                               bufferSize: 4096, useAsync: true))
+                {
                     await fs.WriteAsync(FileContent, 0, FileContent.Length);
                 }
                 FullPath = fullFilename;

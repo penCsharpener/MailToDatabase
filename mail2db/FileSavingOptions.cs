@@ -22,24 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace penCsharpener.Mail2DB {
-    public enum FileSavingOptions {
+namespace penCsharpener.Mail2DB
+{
+    public enum FileSavingOptions
+    {
         SavingTimestamp,
         FirstTwoHashCharacters,
         EmailAccount
     }
 
-    public class FileSavingOption {
+    public class FileSavingOption
+    {
 
-        public FileSavingOption(FileSavingOptions option) {
+        public FileSavingOption(FileSavingOptions option)
+        {
             Option = option;
         }
 
-        public FileSavingOption(string emailAccount) {
+        public FileSavingOption(string emailAccount)
+        {
             EmailAccount = emailAccount;
             Option = FileSavingOptions.EmailAccount;
         }

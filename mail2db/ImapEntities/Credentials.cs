@@ -22,12 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace penCsharpener.Mail2DB {
-    public class Credentials {
+namespace penCsharpener.Mail2DB
+{
+    public class Credentials
+    {
         public string EmailAddress { get; set; }
         public string Password { get; set; }
         public string ServerURL { get; set; }

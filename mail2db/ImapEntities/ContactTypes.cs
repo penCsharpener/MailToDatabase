@@ -22,12 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace penCsharpener.Mail2DB {
-    public enum ContactTypes {
+namespace penCsharpener.Mail2DB
+{
+    public enum ContactTypes
+    {
         From = 1,
         To = 2,
         Cc = 3,

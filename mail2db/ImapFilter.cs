@@ -27,160 +27,194 @@ using MailKit.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace penCsharpener.Mail2DB {
-    public class ImapFilter {
+namespace penCsharpener.Mail2DB
+{
+    public class ImapFilter
+    {
 
         private SearchQuery search;
         private bool _defaultAnd;
         private ImapFilterOperators _operator;
-        public ImapFilterOperators Operator {
-            get { return _operator; }
-            set {
+        public ImapFilterOperators Operator
+        {
+            get => _operator;
+            set
+            {
                 _defaultAnd = _operator == ImapFilterOperators.And;
-                _operator = value; 
+                _operator = value;
             }
         }
 
 
-        public ImapFilter(bool defaultAND = true) {
+        public ImapFilter(bool defaultAND = true)
+        {
             _defaultAnd = defaultAND;
         }
 
-        private void AndOrOr(SearchQuery query) {
-            if (search == null) {
+        private void AndOrOr(SearchQuery query)
+        {
+            if (search == null)
+            {
                 search = query;
                 return;
             }
-            if (_defaultAnd) {
+            if (_defaultAnd)
+            {
                 search = SearchQuery.And(search, query);
-            } else {
+            }
+            else
+            {
                 search = SearchQuery.Or(search, query);
             }
         }
 
-        public ImapFilter BodyContains(string bodyText) {
+        public ImapFilter BodyContains(string bodyText)
+        {
             AndOrOr(SearchQuery.BodyContains(bodyText));
             return this;
         }
 
-        public ImapFilter SubjectContains(string subjectText) {
+        public ImapFilter SubjectContains(string subjectText)
+        {
             AndOrOr(SearchQuery.SubjectContains(subjectText));
             return this;
         }
 
-        public ImapFilter NotSeen() {
+        public ImapFilter NotSeen()
+        {
             AndOrOr(SearchQuery.NotSeen);
             return this;
         }
 
-        public ImapFilter Seen() {
+        public ImapFilter Seen()
+        {
             AndOrOr(SearchQuery.Seen);
             return this;
         }
 
-        public ImapFilter NotAnswered() {
+        public ImapFilter NotAnswered()
+        {
             AndOrOr(SearchQuery.NotAnswered);
             return this;
         }
 
-        public ImapFilter Recent() {
+        public ImapFilter Recent()
+        {
             AndOrOr(SearchQuery.Recent);
             return this;
         }
 
-        public ImapFilter ToContains(string text) {
+        public ImapFilter ToContains(string text)
+        {
             AndOrOr(SearchQuery.ToContains(text));
             return this;
         }
 
-        public ImapFilter CcContains(string text) {
+        public ImapFilter CcContains(string text)
+        {
             AndOrOr(SearchQuery.CcContains(text));
             return this;
         }
 
-        public ImapFilter FromContains(string text) {
+        public ImapFilter FromContains(string text)
+        {
             AndOrOr(SearchQuery.FromContains(text));
             return this;
         }
 
-        public ImapFilter Uids(IList<uint> Uids) {
+        public ImapFilter Uids(IList<uint> Uids)
+        {
             AndOrOr(SearchQuery.Uids(Uids.Select(x => new UniqueId(x)).ToList()));
             return this;
         }
 
-        public ImapFilter Uids(IList<UniqueId> Uids) {
+        public ImapFilter Uids(IList<UniqueId> Uids)
+        {
             AndOrOr(SearchQuery.Uids(Uids));
             return this;
         }
 
-        public ImapFilter YoungerThan(int seconds) {
+        public ImapFilter YoungerThan(int seconds)
+        {
             AndOrOr(SearchQuery.YoungerThan(seconds));
             return this;
         }
 
-        public ImapFilter OlderThan(int seconds) {
+        public ImapFilter OlderThan(int seconds)
+        {
             AndOrOr(SearchQuery.OlderThan(seconds));
             return this;
         }
 
-        public ImapFilter SentSince(DateTime since) {
+        public ImapFilter SentSince(DateTime since)
+        {
             AndOrOr(SearchQuery.SentSince(since));
             return this;
         }
 
-        public ImapFilter SentBefore(DateTime before) {
+        public ImapFilter SentBefore(DateTime before)
+        {
             AndOrOr(SearchQuery.SentBefore(before));
             return this;
         }
 
-        public ImapFilter SentBetween(DateTime from, DateTime to) {
+        public ImapFilter SentBetween(DateTime from, DateTime to)
+        {
             AndOrOr(SearchQuery.And(SearchQuery.SentSince(from), SearchQuery.SentBefore(to)));
             return this;
         }
 
-        public ImapFilter DeliveredBetween(DateTime from, DateTime to) {
+        public ImapFilter DeliveredBetween(DateTime from, DateTime to)
+        {
             AndOrOr(SearchQuery.And(SearchQuery.DeliveredAfter(from), SearchQuery.DeliveredBefore(to)));
             return this;
         }
 
-        public ImapFilter DeliveredAfter(DateTime after) {
+        public ImapFilter DeliveredAfter(DateTime after)
+        {
             AndOrOr(SearchQuery.DeliveredAfter(after));
             return this;
         }
 
-        public ImapFilter DeliveredBefore(DateTime before) {
+        public ImapFilter DeliveredBefore(DateTime before)
+        {
             AndOrOr(SearchQuery.DeliveredBefore(before));
             return this;
         }
 
-        public ImapFilter MessageContains(string text) {
+        public ImapFilter MessageContains(string text)
+        {
             AndOrOr(SearchQuery.MessageContains(text));
             return this;
         }
 
         internal int LimitResults { get; set; }
-        public ImapFilter Limit(int limit) {
+        public ImapFilter Limit(int limit)
+        {
             LimitResults = limit;
             return this;
         }
 
-        public ImapFilter And(ImapFilter imapFilter) {
+        public ImapFilter And(ImapFilter imapFilter)
+        {
             search.And(imapFilter.ToSearchQuery());
             return this;
         }
 
-        public ImapFilter Or(ImapFilter imapFilter) {
+        public ImapFilter Or(ImapFilter imapFilter)
+        {
             search.Or(imapFilter.ToSearchQuery());
             return this;
         }
 
-        public SearchQuery ToSearchQuery() {
+        public SearchQuery ToSearchQuery()
+        {
             return search ?? SearchQuery.All;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return search.ToString();
         }
     }

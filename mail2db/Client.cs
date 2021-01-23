@@ -1,26 +1,26 @@
 ﻿/*
-MIT License
+ MIT License
 
-Copyright (c) 2019 Matthias Müller
+ Copyright (c) 2019 Matthias Müller
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
 
 using MailKit;
 using MailKit.Net.Imap;
@@ -33,8 +33,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace penCsharpener.Mail2DB {
-    public class Client : IMail2DBClient, IRetrievalClient {
+namespace penCsharpener.Mail2DB
+{
+    public class Client : IMail2DBClient, IRetrievalClient
+    {
 
         public string EmailAddress { get; }
         public string Password { get; }
@@ -52,8 +54,8 @@ namespace penCsharpener.Mail2DB {
                                                               //| MessageSummaryItems.PreviewText
                                                               | MessageSummaryItems.References
                                                               | MessageSummaryItems.Envelope;
-        
-        private ImapClient _imapClient = new ImapClient();
+
+        private readonly ImapClient _imapClient = new ImapClient();
         private IMailFolder _mailFolder;
         public CancellationTokenSource cancel = new CancellationTokenSource();
         private string[] _mailFolders;
@@ -61,7 +63,8 @@ namespace penCsharpener.Mail2DB {
 
         public int MailCountInFolder => _mailFolder?.Count ?? -1;
 
-        public Client(Credentials credentials) {
+        public Client(Credentials credentials)
+        {
             EmailAddress = credentials.EmailAddress;
             ServerURL = credentials.ServerURL;
             Password = credentials.Password;
@@ -71,165 +74,240 @@ namespace penCsharpener.Mail2DB {
         public Client(string usernameOrEmailAddress,
                       string serverURL,
                       string password,
-                      ushort port) {
+                      ushort port)
+        {
             EmailAddress = usernameOrEmailAddress;
             ServerURL = serverURL;
             Password = password;
             Port = port;
         }
 
-        public async Task<int> GetTotalMailCount() {
+        public async Task<int> GetTotalMailCount()
+        {
             _mailFolder = await Authenticate();
             _mailFolder.Open(FolderAccess.ReadOnly);
             return (await _mailFolder.SearchAsync(SearchQuery.All))?.Count ?? 0;
         }
 
-        public async Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null) {
-            try {
-                if (!_imapClient.IsConnected) {
+        public async Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null)
+        {
+            try
+            {
+                if (!_imapClient.IsConnected)
+                {
                     await _imapClient.ConnectAsync(ServerURL, Port, true);
                     _imapClient.AuthenticationMechanisms.Remove("XOAUTH");
                     await _imapClient.AuthenticateAsync(EmailAddress, Password);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 errorHandeling?.Invoke(ex);
             }
             var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
             return personal.GetSubfolders(false, CancellationToken.None).Select(x => x.Name).ToList();
         }
 
-        public async Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null) {
-            try {
-                if (!_imapClient.IsConnected) {
+        public async Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null)
+        {
+            try
+            {
+                if (!_imapClient.IsConnected)
+                {
                     await _imapClient.ConnectAsync(ServerURL, Port, true);
                     _imapClient.AuthenticationMechanisms.Remove("XOAUTH");
                     await _imapClient.AuthenticateAsync(EmailAddress, Password);
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 errorHandeling?.Invoke(ex);
             }
-            if (_mailFolders == null) {
+
+            if (_mailFolders == null)
+            {
                 _mailFolders = new[] { "inbox" };
             }
 
-            var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
-
-            foreach (var folder in personal.GetSubfolders(false, CancellationToken.None)) {
-                foreach (var name in _mailFolders) {
-                    if (folder != null && folder.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) {
+            IMailFolder personal = null;
+            try
+            {
+                personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
+            }
+            catch
+            {
+                try
+                {
+                    personal = _imapClient.Inbox;
+                }
+                catch (Exception ex)
+                {
+                    errorHandeling?.Invoke(ex);
+                }
+            }
+            foreach (var folder in personal.GetSubfolders(false, CancellationToken.None))
+            {
+                foreach (var name in _mailFolders)
+                {
+                    if (folder.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    {
                         return folder;
                     }
                 }
             }
-
             _mailFolder = null;
             throw new MailFolderNotFoundException($"Mail folder(s) '{string.Join(", ", _mailFolders)}' not found.");
         }
 
         /// <summary>
-        /// Sets the mailfolder the IMAP client should be running its methods on. 
+        /// Sets the mailfolder the IMAP client should be running its methods on.
         /// Search will check each variant of the folder names passed in and set
         /// the first that matches. Uses 'StringComparison.OrdinalIgnoreCase'.
         /// </summary>
         /// <param name="folderNames"></param>
-        public void SetMailFolder(params string[] folderNames) {
+        public void SetMailFolder(params string[] folderNames)
+        {
             _mailFolders = folderNames;
         }
 
-        public async Task<IList<UniqueId>> GetUIds(ImapFilter filter = null) {
-            using (cancel = new CancellationTokenSource()) {
+        public async Task<IList<UniqueId>> GetUIds(ImapFilter filter = null)
+        {
+            using (cancel = new CancellationTokenSource())
+            {
 
                 _mailFolder = await Authenticate();
                 await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-                if (filter == null) {
+                if (filter == null)
+                {
                     _lastRetrievedUIds = await _mailFolder.SearchAsync(new SearchQuery());
-                } else {
+                }
+                else
+                {
                     _lastRetrievedUIds = await _mailFolder.SearchAsync(filter.ToSearchQuery());
                 }
+
+                if (_lastRetrievedUIds == null)
+                {
+                    _lastRetrievedUIds = new List<UniqueId>();
+                }
+
                 return _lastRetrievedUIds;
             }
         }
 
-        public async Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds) {
-            using (cancel = new CancellationTokenSource()) {
+        public async Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds)
+        {
+            using (cancel = new CancellationTokenSource())
+            {
 
                 _mailFolder = await Authenticate();
                 _mailFolder.Open(FolderAccess.ReadOnly);
 
                 var list = new List<MimeMessageUId>();
-                foreach (var uid in uniqueIds) {
+                foreach (var uid in uniqueIds)
+                {
                     list.Add(new MimeMessageUId(await _mailFolder.GetMessageAsync(uid), uid));
                 }
                 return list;
             }
         }
 
-        public async Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId) {
-            using (cancel = new CancellationTokenSource()) {
+        public async Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId)
+        {
+            using (cancel = new CancellationTokenSource())
+            {
                 //_mailFolder = await Authenticate();
                 //_mailFolder.Open(FolderAccess.ReadOnly);
 
                 var mime = await _mailFolder.GetMessageAsync(uniqueId);
-                if (mime != null) {
+                if (mime != null)
+                {
                     return new MimeMessageUId(mime, uniqueId);
                 }
                 return null;
             }
         }
 
-        public async Task<MimeMessageUId> GetMessage(UniqueId uniqueId) {
-            using (cancel = new CancellationTokenSource()) {
+        public async Task<MimeMessageUId> GetMessage(UniqueId uniqueId)
+        {
+            using (cancel = new CancellationTokenSource())
+            {
                 _mailFolder = await Authenticate();
                 await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
                 return new MimeMessageUId(await _mailFolder.GetMessageAsync(uniqueId), uniqueId);
             }
         }
 
-        public async Task<IList<IMessageSummary>> GetSummaries() {
+        public async Task<IList<IMessageSummary>> GetSummaries()
+        {
             var inbox = await Authenticate();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
             return await inbox.FetchAsync(0, -1, MessageSummaryOptions);
         }
 
-        public async Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids) {
+        public async Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids)
+        {
             var inbox = await Authenticate();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
             return await inbox.FetchAsync(uids, MessageSummaryOptions);
         }
 
-        public async Task<IList<IMessageSummary>> GetSummaries(ImapFilter filter, uint[] uidsToExclude = null) {
+        public async Task<IList<IMessageSummary>> GetSummaries(ImapFilter filter, uint[] uidsToExclude = null)
+        {
             var inbox = await Authenticate();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
             _lastRetrievedUIds = await GetUIds(filter);
-            if (uidsToExclude?.Length > 0) {
+            if (uidsToExclude?.Length > 0)
+            {
                 _lastRetrievedUIds = _lastRetrievedUIds.Where(x => !uidsToExclude.Contains(x.Id)).ToArray();
             }
             return await inbox.FetchAsync(_lastRetrievedUIds, MessageSummaryOptions);
         }
 
-        public async Task MarkAsRead(IList<UniqueId> uids) {
+        public async Task MarkAsRead(IList<UniqueId> uids)
+        {
+            if (_mailFolder == null)
+            {
+                _mailFolder = await Authenticate();
+            }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.SetFlagsAsync(uids, MessageFlags.Seen, false);
         }
 
-        public async Task DeleteMessages(IList<UniqueId> uids) {
+        public async Task DeleteMessages(IList<UniqueId> uids)
+        {
+            if (_mailFolder == null)
+            {
+                _mailFolder = await Authenticate();
+            }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.SetFlagsAsync(uids, MessageFlags.Deleted, false);
         }
 
-        public async Task DeleteMessages(ImapFilter imapFilter) {
+        public async Task DeleteMessages(ImapFilter imapFilter)
+        {
             var uids = await GetUIds(imapFilter);
             await DeleteMessages(uids);
         }
 
-        public async Task ExpungeMail() {
+        public async Task ExpungeMail()
+        {
+            if (_mailFolder == null)
+            {
+                _mailFolder = await Authenticate();
+            }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.ExpungeAsync();
         }
 
-        public async Task<UniqueId?> AppendMessage(MimeMessage mimeMessage, bool asNotSeen = false) {
+        public async Task<UniqueId?> AppendMessage(MimeMessage mimeMessage, bool asNotSeen = false)
+        {
             var flags = asNotSeen ? MessageFlags.None : MessageFlags.Seen;
+            if (_mailFolder == null)
+            {
+                _mailFolder = await Authenticate();
+            }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             return await _mailFolder.AppendAsync(mimeMessage);
         }
@@ -237,14 +315,19 @@ namespace penCsharpener.Mail2DB {
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
-        protected async virtual void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
+        protected async virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
                     // TODO: dispose managed state (managed objects).
-                    if (_mailFolder != null) {
+                    if (_mailFolder != null)
+                    {
                         await _mailFolder.CloseAsync();
                     }
-                    if (_imapClient?.IsConnected == true) {
+                    if (_imapClient?.IsConnected == true)
+                    {
                         await _imapClient.DisconnectAsync(true);
                         _imapClient.Dispose();
                     }
@@ -261,7 +344,8 @@ namespace penCsharpener.Mail2DB {
             }
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Dispose(true);
         }
         #endregion

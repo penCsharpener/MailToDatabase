@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using MailKit;
 using System;
 
-namespace penCsharpener.Mail2DB {
-    public class ImapMessage {
+namespace penCsharpener.Mail2DB
+{
+    public class ImapMessage
+    {
 
         public byte[] MimeMessageBytes { get; set; }
         public uint UId { get; set; }

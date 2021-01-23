@@ -22,8 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-namespace penCsharpener.Mail2DB {
-    public class MailContact {
+namespace penCsharpener.Mail2DB
+{
+    public class MailContact
+    {
         public string ContactName { get; set; }
         public string EmailAddress { get; set; }
         public ContactTypes ContactType { get; set; }
