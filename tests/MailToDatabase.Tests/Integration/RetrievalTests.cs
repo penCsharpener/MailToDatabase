@@ -28,6 +28,14 @@ namespace MailToDatabase.Tests.Integration
         }
 
         [Fact]
+        public async Task PersonalFolder()
+        {
+            var list = await Mail2DB.GetUIds(DefaultFilter);
+
+            list?.Count.Should().BeGreaterThan(0);
+        }
+
+        [Fact]
         public async Task TestRetrieval()
         {
             var list = await Mail2DB.GetUIds(DefaultFilter);

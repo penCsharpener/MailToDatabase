@@ -1,6 +1,6 @@
 ﻿using MailToDatabase.Sqlite.Configuration;
+using MailToDatabase.Sqlite.Extensions;
 using MailToDatabase.Sqlite.Services.Abstractions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Threading;
@@ -10,12 +10,15 @@ namespace MailToDatabase.Sqlite.Services
 {
     public class FileSystem : IFileSystem
     {
+        private const string EXPORT_PATH = "export";
         private AppSettings _appSettings;
         private readonly ILogger<FileSystem> _logger;
+        private string _mailFolderPath;
 
-        public FileSystem(IConfiguration configuration, ILogger<FileSystem> logger)
+        public FileSystem(AppSettings settings, ILogger<FileSystem> logger)
         {
-            _appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            _appSettings = settings;
+            _mailFolderPath = settings.MailFolderName.Replace(" ", "_").Replace(Path.GetInvalidPathChars(), null).ToLower();
             _logger = logger;
         }
 
@@ -23,7 +26,9 @@ namespace MailToDatabase.Sqlite.Services
         {
             try
             {
-                var fullPath = Path.Combine(_appSettings.DownloadDirectory, fileName + ".ime");
+                var fullPath = Path.Combine(_appSettings.DownloadDirectory, EXPORT_PATH, _mailFolderPath, fileName + ".ime");
+
+                CheckAndCreateDirectories();
 
                 if (!File.Exists(fullPath))
                 {
@@ -43,6 +48,16 @@ namespace MailToDatabase.Sqlite.Services
             var fullPath = Path.Combine(_appSettings.DownloadDirectory, fileName, ".ime");
 
             return File.Exists(fullPath);
+        }
+
+        private void CheckAndCreateDirectories()
+        {
+            var dir = Path.Combine(_appSettings.DownloadDirectory, EXPORT_PATH, _mailFolderPath);
+
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ namespace MailToDatabase.Sqlite.Extensions
     {
         public static ImapFilter ToIntervalFilter(this AppSettings settings)
         {
-            var filter = new ImapFilter().DeliveredBetween(settings.DelieveredAfter, settings.DelieveredBefore);
+            var filter = new ImapFilter().SentBetween(settings.DelieveredAfter, settings.DelieveredBefore);
 
             return filter;
         }

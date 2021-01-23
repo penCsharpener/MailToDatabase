@@ -1,6 +1,5 @@
 ﻿using MailToDatabase.Contracts;
 using MailToDatabase.Sqlite.Configuration;
-using MailToDatabase.Sqlite.Extensions;
 using MailToDatabase.Sqlite.Services.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.Linq;
@@ -29,8 +28,9 @@ namespace MailToDatabase.Sqlite.Services
 
         public async Task GetAllMailsAsync()
         {
-            var uIds = await _retrievalClient.GetUIds(_settings.ToIntervalFilter());
-            var existingMails = await _repo.GetExistingUidsAsync("inbox");
+            _retrievalClient.SetMailFolder(_settings.MailFolderName);
+            var uIds = await _retrievalClient.GetUIds(new ImapFilter());
+            var existingMails = await _repo.GetExistingUidsAsync(_settings.MailFolderName);
             var existingUids = existingMails.Select(x => x.UniqueId).ToList();
             ImapFilter uIdFilter = new();
 
@@ -41,18 +41,25 @@ namespace MailToDatabase.Sqlite.Services
 
             await foreach (var imapMessage in _mailConverter.GetMessagesAsync(uIdFilter))
             {
-                var email = await _repo.SaveEmailAsync(imapMessage);
-
-                if (email == null)
+                try
                 {
-                    _logger.LogInformation($"Email from imap folder '{imapMessage.MailFolder}', uId '{imapMessage.UId}' could not be saved to database.");
-                    continue;
+                    var email = await _repo.SaveEmailAsync(imapMessage);
+
+                    if (email == null)
+                    {
+                        _logger.LogInformation($"Email from imap folder '{imapMessage.MailFolder}', uId '{imapMessage.UId}' could not be saved to database.");
+                        continue;
+                    }
+
+                    if (!await _fileSystem.TryWriteAllBytesAsync(email.FileName, imapMessage.MimeMessageBytes))
+                    {
+                        await _repo.DeleteEmailAsync(email);
+                        _logger.LogInformation($"Email from imap folder '{imapMessage.MailFolder}', uId '{imapMessage.UId}' could not be saved to disc.");
+                    }
                 }
-
-                if (!await _fileSystem.TryWriteAllBytesAsync(email.FileName, imapMessage.MimeMessageBytes))
+                catch (System.Exception ex)
                 {
-                    await _repo.DeleteEmailAsync(email);
-                    _logger.LogInformation($"Email from imap folder '{imapMessage.MailFolder}', uId '{imapMessage.UId}' could not be saved to disc.");
+                    _logger.LogError(ex.Message);
                 }
             }
         }
