@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\mail2db\mail2db.csproj" />
+    <ProjectReference Include="..\..\src\MailToDatabase\MailToDatabase.csproj" />
   </ItemGroup>
 
 </Project>

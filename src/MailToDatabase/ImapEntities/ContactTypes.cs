@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-namespace penCsharpener.Mail2DB
+namespace MailToDatabase
 {
-    public class Credentials
+    public enum ContactTypes
     {
-        public string EmailAddress { get; set; }
-        public string Password { get; set; }
-        public string ServerURL { get; set; }
-        public ushort Port { get; set; }
+        From = 1,
+        To = 2,
+        Cc = 3,
+        Bcc = 4,
     }
 }

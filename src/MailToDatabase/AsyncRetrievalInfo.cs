@@ -1,4 +1,4 @@
-﻿namespace penCsharpener.Mail2DB
+﻿namespace MailToDatabase
 {
     public class AsyncRetrievalInfo
     {

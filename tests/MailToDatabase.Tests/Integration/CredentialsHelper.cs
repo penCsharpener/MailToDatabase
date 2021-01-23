@@ -1,5 +1,5 @@
-﻿using MailToDatabase.Tests.Integration;
-using penCsharpener.Mail2DB;
+﻿using MailToDatabase;
+using MailToDatabase.Tests.Integration;
 using System;
 
 namespace UnitTests

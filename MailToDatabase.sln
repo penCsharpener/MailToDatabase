@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mail2db", "src\mail2db\mail2db.csproj", "{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailToDatabase", "src\MailToDatabase\MailToDatabase.csproj", "{CBDA633D-2BA6-426C-B952-02AFBA2A0C55}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1B1884F4-38E1-43A3-A079-7BE9E240C0E6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{996328E9-C04C-460A-913B-7C2B0F01F867}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailToDatabase.Tests", "tests\MailToDatabase.Tests\MailToDatabase.Tests.csproj", "{E6F765FF-05C8-4B38-AD28-86B23EC91138}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailToDatabase.Tests", "tests\MailToDatabase.Tests\MailToDatabase.Tests.csproj", "{E6F765FF-05C8-4B38-AD28-86B23EC91138}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

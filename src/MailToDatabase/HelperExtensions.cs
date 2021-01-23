@@ -22,13 +22,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-namespace penCsharpener.Mail2DB
+using System.Linq;
+using System.Text;
+
+namespace MailToDatabase
 {
-    public enum ContactTypes
+    internal static class HelperExtensions
     {
-        From = 1,
-        To = 2,
-        Cc = 3,
-        Bcc = 4,
+        internal static byte[] ToBytes(this string str, Encoding encoding)
+        {
+            return encoding.GetBytes(str);
+        }
+
+        internal static bool IsNullOrEmpty(this string str)
+        {
+            return string.IsNullOrEmpty(str);
+        }
+
+        internal static string ToSha256(this byte[] bytes)
+        {
+            using (var sha1 = new System.Security.Cryptography.SHA256Managed())
+            {
+                var byteHash = sha1.ComputeHash(bytes);
+                return byteHash.ToHex();
+            }
+        }
+
+        internal static string ToHex(this byte[] bytes)
+        {
+            return string.Concat(bytes.Select(x => x.ToString("X2"))).ToLower();
+        }
     }
 }

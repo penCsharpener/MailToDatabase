@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace penCsharpener.Mail2DB.Contracts
+namespace MailToDatabase.Contracts
 {
     public interface IWriteAttachment
     {

@@ -28,7 +28,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace penCsharpener.Mail2DB
+namespace MailToDatabase
 {
     public static class MailkitExtensions
     {

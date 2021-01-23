@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace penCsharpener.Mail2DB.Contracts
+namespace MailToDatabase.Contracts
 {
     /// <summary>
     /// state changing methods that alter Imap account content

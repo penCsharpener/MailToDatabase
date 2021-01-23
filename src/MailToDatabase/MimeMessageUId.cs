@@ -22,29 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using System;
+using MailKit;
+using MimeKit;
 
-namespace penCsharpener.Mail2DB
+namespace MailToDatabase
 {
-    public class ImapMessage
+    public class MimeMessageUId
     {
+        public MimeMessageUId(MimeMessage mimeMessage, UniqueId uniqueId)
+        {
+            MimeMessage = mimeMessage;
+            UniqueId = uniqueId;
+        }
 
-        public byte[] MimeMessageBytes { get; set; }
-        public uint UId { get; set; }
-        public string MailFolder { get; set; }
-        public string Subject { get; set; }
-        public string Body { get; set; }
-        public string BodyPlainText { get; set; }
-        public bool IsHTML { get; set; }
-        public bool HasAttachments { get; set; }
-        public string MessageTextId { get; set; }
-        public string InReplyToId { get; set; }
-        public DateTime ReceivedAtUTC { get; set; }
-        public DateTime ReceivedAtLocal { get; set; }
-        public MailContact From { get; set; }
-        public MailContact[] Cc { get; set; }
-        public MailContact[] To { get; set; }
-        public ImapAttachment[] Attachments { get; set; }
-
+        public MimeMessage MimeMessage { get; set; }
+        public UniqueId UniqueId { get; set; }
     }
 }

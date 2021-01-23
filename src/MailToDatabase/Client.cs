@@ -25,15 +25,15 @@
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
+using MailToDatabase.Contracts;
 using MimeKit;
-using penCsharpener.Mail2DB.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace penCsharpener.Mail2DB
+namespace MailToDatabase
 {
     public class Client : IMail2DBClient, IRetrievalClient
     {

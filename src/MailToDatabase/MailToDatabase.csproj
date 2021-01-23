@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>penCsharpener.Mail2DB</RootNamespace>
+    <RootNamespace>penCsharpener.MailToDatabase</RootNamespace>
     <LangVersion>preview</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>penCsharpener.Mail2DB</PackageId>
@@ -14,7 +14,7 @@
     <Copyright>Matthias Müller</Copyright>
     <RepositoryUrl>https://github.com/penCsharpener/mail2db</RepositoryUrl>
     <PackageProjectUrl>https://github.com/penCsharpener/mail2db</PackageProjectUrl>
-    <AssemblyName>Mail2DB</AssemblyName>
+    <AssemblyName>MailToDatabase</AssemblyName>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
  

@@ -23,15 +23,15 @@ SOFTWARE.
 */
 
 using MailKit;
+using MailToDatabase.Contracts;
 using MimeKit;
-using penCsharpener.Mail2DB.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace penCsharpener.Mail2DB
+namespace MailToDatabase
 {
     public class MailTypeConverter : IDisposable
     {

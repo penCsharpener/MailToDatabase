@@ -22,18 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-using MailKit;
-using MimeKit;
-
-namespace penCsharpener.Mail2DB
+namespace MailToDatabase
 {
-    public class MimeMessageUId {
-        public MimeMessageUId(MimeMessage mimeMessage, UniqueId uniqueId) {
-            MimeMessage = mimeMessage;
-            UniqueId = uniqueId;
-        }
-
-        public MimeMessage MimeMessage { get; set; }
-        public UniqueId UniqueId { get; set; }
+    public class Credentials
+    {
+        public string EmailAddress { get; set; }
+        public string Password { get; set; }
+        public string ServerURL { get; set; }
+        public ushort Port { get; set; }
     }
 }
