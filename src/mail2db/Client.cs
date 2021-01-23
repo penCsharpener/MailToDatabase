@@ -172,71 +172,57 @@ namespace penCsharpener.Mail2DB
 
         public async Task<IList<UniqueId>> GetUIds(ImapFilter filter = null)
         {
-            using (cancel = new CancellationTokenSource())
+            _mailFolder = await Authenticate();
+            await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
+
+            if (filter == null)
             {
-
-                _mailFolder = await Authenticate();
-                await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
-
-                if (filter == null)
-                {
-                    _lastRetrievedUIds = await _mailFolder.SearchAsync(new SearchQuery());
-                }
-                else
-                {
-                    _lastRetrievedUIds = await _mailFolder.SearchAsync(filter.ToSearchQuery());
-                }
-
-                if (_lastRetrievedUIds == null)
-                {
-                    _lastRetrievedUIds = new List<UniqueId>();
-                }
-
-                return _lastRetrievedUIds;
+                _lastRetrievedUIds = await _mailFolder.SearchAsync(new SearchQuery());
             }
+            else
+            {
+                _lastRetrievedUIds = await _mailFolder.SearchAsync(filter.ToSearchQuery());
+            }
+
+            if (_lastRetrievedUIds == null)
+            {
+                _lastRetrievedUIds = new List<UniqueId>();
+            }
+
+            return _lastRetrievedUIds;
         }
 
         public async Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds)
         {
-            using (cancel = new CancellationTokenSource())
+            _mailFolder = await Authenticate();
+            _mailFolder.Open(FolderAccess.ReadOnly);
+
+            var list = new List<MimeMessageUId>();
+            foreach (var uid in uniqueIds)
             {
-
-                _mailFolder = await Authenticate();
-                _mailFolder.Open(FolderAccess.ReadOnly);
-
-                var list = new List<MimeMessageUId>();
-                foreach (var uid in uniqueIds)
-                {
-                    list.Add(new MimeMessageUId(await _mailFolder.GetMessageAsync(uid), uid));
-                }
-                return list;
+                list.Add(new MimeMessageUId(await _mailFolder.GetMessageAsync(uid), uid));
             }
+            return list;
         }
 
         public async Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId)
         {
-            using (cancel = new CancellationTokenSource())
-            {
-                //_mailFolder = await Authenticate();
-                //_mailFolder.Open(FolderAccess.ReadOnly);
+            //_mailFolder = await Authenticate();
+            //_mailFolder.Open(FolderAccess.ReadOnly);
 
-                var mime = await _mailFolder.GetMessageAsync(uniqueId);
-                if (mime != null)
-                {
-                    return new MimeMessageUId(mime, uniqueId);
-                }
-                return null;
+            var mime = await _mailFolder.GetMessageAsync(uniqueId);
+            if (mime != null)
+            {
+                return new MimeMessageUId(mime, uniqueId);
             }
+            return null;
         }
 
         public async Task<MimeMessageUId> GetMessage(UniqueId uniqueId)
         {
-            using (cancel = new CancellationTokenSource())
-            {
-                _mailFolder = await Authenticate();
-                await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
-                return new MimeMessageUId(await _mailFolder.GetMessageAsync(uniqueId), uniqueId);
-            }
+            _mailFolder = await Authenticate();
+            await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
+            return new MimeMessageUId(await _mailFolder.GetMessageAsync(uniqueId), uniqueId);
         }
 
         public async Task<IList<IMessageSummary>> GetSummaries()

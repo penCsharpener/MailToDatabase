@@ -27,19 +27,19 @@ using System.Text;
 
 namespace penCsharpener.Mail2DB
 {
-    public static class HelperExtensions
+    internal static class HelperExtensions
     {
-        public static byte[] ToBytes(this string str, Encoding encoding)
+        internal static byte[] ToBytes(this string str, Encoding encoding)
         {
             return encoding.GetBytes(str);
         }
 
-        public static bool IsNullOrEmpty(this string str)
+        internal static bool IsNullOrEmpty(this string str)
         {
             return string.IsNullOrEmpty(str);
         }
 
-        public static string ToSha256(this byte[] bytes)
+        internal static string ToSha256(this byte[] bytes)
         {
             using (var sha1 = new System.Security.Cryptography.SHA256Managed())
             {
@@ -48,7 +48,7 @@ namespace penCsharpener.Mail2DB
             }
         }
 
-        public static string ToHex(this byte[] bytes)
+        internal static string ToHex(this byte[] bytes)
         {
             return string.Concat(bytes.Select(x => x.ToString("X2"))).ToLower();
         }

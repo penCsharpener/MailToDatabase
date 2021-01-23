@@ -6,9 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnitTests;
 using Xunit;
 
-namespace UnitTests
+namespace MailToDatabase.Tests.Integration
 {
     public class RetrievalTests
     {
@@ -18,14 +19,9 @@ namespace UnitTests
         private MailTypeConverter Converter { get; set; }
         private ImapFilter DefaultFilter { get; set; }
 
-        /// <summary>
-        /// Check the application folder for a file called 'CredentialHelper.Filename',
-        /// enter your credentials there to test against the imap server.
-        /// </summary>
-        /// <returns></returns>
-        public async Task Setup()
+        public RetrievalTests()
         {
-            Credentials = await CredentialHelper.GetCredentials();
+            Credentials = CredentialsHelper.GetCredentials();
             Mail2DB = new Client(Credentials);
             Converter = new MailTypeConverter(Mail2DB);
             DefaultFilter = new ImapFilter().NotSeen(); // younger than two days

@@ -11,7 +11,6 @@ namespace penCsharpener.Mail2DB.Contracts
     /// </summary>
     public interface IMail2DBClient
     {
-
         Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null);
         Task ExpungeMail();
         Task MarkAsRead(IList<UniqueId> uids);

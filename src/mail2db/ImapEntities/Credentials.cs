@@ -30,6 +30,5 @@ namespace penCsharpener.Mail2DB
         public string Password { get; set; }
         public string ServerURL { get; set; }
         public ushort Port { get; set; }
-
     }
 }
