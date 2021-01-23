@@ -35,7 +35,7 @@ using System.Threading.Tasks;
 
 namespace MailToDatabase
 {
-    public class Client : IMail2DBClient, IRetrievalClient
+    public class Client : IMailToDatabaseClient, IRetrievalClient
     {
 
         public string EmailAddress { get; }

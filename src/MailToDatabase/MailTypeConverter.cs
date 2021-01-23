@@ -183,7 +183,7 @@ namespace MailToDatabase
             }
         }
 
-        public async Task MarkLastUidsAsRead(IMail2DBClient dbClient)
+        public async Task MarkLastUidsAsRead(IMailToDatabaseClient dbClient)
         {
             if (_lastRetrievedUids != null && _lastRetrievedUids.Count > 0)
             {
