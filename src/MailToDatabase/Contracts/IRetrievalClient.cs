@@ -14,7 +14,7 @@ namespace MailToDatabase.Contracts
         Task<IList<IMessageSummary>> GetSummaries();
         Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids);
         Task<IList<IMessageSummary>> GetSummaries(ImapFilter filter, uint[] uidsToExclude = null);
-        Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null);
+        Task<IList<string>> GetMailFoldersAsync(Action<Exception> errorHandeling = null);
         Task<MimeMessageUId> GetMessage(UniqueId uniqueId);
         Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId);
         Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds);

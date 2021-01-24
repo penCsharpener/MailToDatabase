@@ -33,18 +33,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MailToDatabase
+namespace MailToDatabase.Clients
 {
-    public class Client : IMailToDatabaseClient, IRetrievalClient
+    public class GenericClient : IMailToDatabaseClient, IRetrievalClient
     {
-
         public string EmailAddress { get; }
         public string Password { get; }
         public string ServerURL { get; }
         public ushort Port { get; }
         public string OpenedMailFolder => _mailFolder?.Name;
 
-        private const MessageSummaryItems MessageSummaryOptions = MessageSummaryItems.UniqueId
+        protected const MessageSummaryItems MessageSummaryOptions = MessageSummaryItems.UniqueId
                                                               | MessageSummaryItems.Size
                                                               | MessageSummaryItems.Flags
                                                               //| MessageSummaryItems.BodyStructure
@@ -55,15 +54,14 @@ namespace MailToDatabase
                                                               | MessageSummaryItems.References
                                                               | MessageSummaryItems.Envelope;
 
-        private readonly ImapClient _imapClient = new ImapClient();
-        private IMailFolder _mailFolder;
-        public CancellationTokenSource cancel = new CancellationTokenSource();
-        private string[] _mailFolders;
-        private IList<UniqueId> _lastRetrievedUIds;
+        protected readonly ImapClient _imapClient = new ImapClient();
+        protected IMailFolder _mailFolder;
+        protected string[] _mailFolders;
+        protected IList<UniqueId> _lastRetrievedUIds;
 
         public int MailCountInFolder => _mailFolder?.Count ?? -1;
 
-        public Client(Credentials credentials)
+        public GenericClient(Credentials credentials)
         {
             EmailAddress = credentials.EmailAddress;
             ServerURL = credentials.ServerURL;
@@ -71,7 +69,7 @@ namespace MailToDatabase
             Port = credentials.Port;
         }
 
-        public Client(string usernameOrEmailAddress,
+        public GenericClient(string usernameOrEmailAddress,
                       string serverURL,
                       string password,
                       ushort port)
@@ -82,14 +80,14 @@ namespace MailToDatabase
             Port = port;
         }
 
-        public async Task<int> GetTotalMailCount()
+        public virtual async Task<int> GetTotalMailCount()
         {
-            _mailFolder = await Authenticate();
+            _mailFolder = await AuthenticateAsync();
             _mailFolder.Open(FolderAccess.ReadOnly);
             return (await _mailFolder.SearchAsync(SearchQuery.All))?.Count ?? 0;
         }
 
-        public async Task<IList<string>> GetMailFolders(Action<Exception> errorHandeling = null)
+        public virtual async Task<IList<string>> GetMailFoldersAsync(Action<Exception> errorHandeling = null)
         {
             try
             {
@@ -105,23 +103,38 @@ namespace MailToDatabase
                 errorHandeling?.Invoke(ex);
             }
             var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
-            return personal.GetSubfolders(false, CancellationToken.None).Select(x => x.Name).ToList();
+
+            var list = new List<string>();
+            await foreach (var folder in GetFolderRecursivelyAsync(personal))
+            {
+                list.Add(folder.Name);
+            }
+            return list;
         }
 
-        public async Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null)
+        protected virtual async IAsyncEnumerable<IMailFolder> GetFolderRecursivelyAsync(IMailFolder mailFolder)
         {
-            try
+            foreach (var subFolder in await mailFolder.GetSubfoldersAsync(false, CancellationToken.None))
             {
-                if (!_imapClient.IsConnected)
+                if ((await subFolder.GetSubfoldersAsync(false, CancellationToken.None)).Any())
                 {
-                    await _imapClient.ConnectAsync(ServerURL, Port, true);
-                    _imapClient.AuthenticationMechanisms.Remove("XOAUTH");
-                    await _imapClient.AuthenticateAsync(EmailAddress, Password);
+                    await foreach (var folder in GetFolderRecursivelyAsync(subFolder))
+                    {
+                        yield return folder;
+                    }
                 }
+
+                yield return subFolder;
             }
-            catch (Exception ex)
+        }
+
+        public virtual async Task<IMailFolder> AuthenticateAsync(CancellationToken cancellationToken = default)
+        {
+            if (!_imapClient.IsConnected)
             {
-                errorHandeling?.Invoke(ex);
+                await _imapClient.ConnectAsync(ServerURL, Port, true);
+                _imapClient.AuthenticationMechanisms.Remove("XOAUTH");
+                await _imapClient.AuthenticateAsync(EmailAddress, Password);
             }
 
             if (_mailFolders == null)
@@ -129,33 +142,16 @@ namespace MailToDatabase
                 _mailFolders = new[] { "inbox" };
             }
 
-            IMailFolder personal = null;
-            try
+            var personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
+
+            await foreach (var folder in GetFolderRecursivelyAsync(personal))
             {
-                personal = _imapClient.GetFolder(_imapClient.PersonalNamespaces[0]);
-            }
-            catch
-            {
-                try
+                if (_mailFolders.Contains(folder.Name.ToLower()))
                 {
-                    personal = _imapClient.Inbox;
-                }
-                catch (Exception ex)
-                {
-                    errorHandeling?.Invoke(ex);
+                    return folder;
                 }
             }
-            foreach (var folder in personal.GetSubfolders(false, CancellationToken.None))
-            {
-                foreach (var name in _mailFolders)
-                {
-                    if (folder.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return folder;
-                    }
-                }
-            }
-            _mailFolder = null;
+
             throw new MailFolderNotFoundException($"Mail folder(s) '{string.Join(", ", _mailFolders)}' not found.");
         }
 
@@ -165,14 +161,14 @@ namespace MailToDatabase
         /// the first that matches. Uses 'StringComparison.OrdinalIgnoreCase'.
         /// </summary>
         /// <param name="folderNames"></param>
-        public void SetMailFolder(params string[] folderNames)
+        public virtual void SetMailFolder(params string[] folderNames)
         {
-            _mailFolders = folderNames;
+            _mailFolders = folderNames.Select(x => x.ToLower()).ToArray();
         }
 
-        public async Task<IList<UniqueId>> GetUIds(ImapFilter filter = null)
+        public virtual async Task<IList<UniqueId>> GetUIds(ImapFilter filter = null)
         {
-            _mailFolder = await Authenticate();
+            _mailFolder = await AuthenticateAsync();
             await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
             if (filter == null)
@@ -192,9 +188,9 @@ namespace MailToDatabase
             return _lastRetrievedUIds;
         }
 
-        public async Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds)
+        public virtual async Task<List<MimeMessageUId>> GetMessageUids(IList<UniqueId> uniqueIds)
         {
-            _mailFolder = await Authenticate();
+            _mailFolder = await AuthenticateAsync();
             _mailFolder.Open(FolderAccess.ReadOnly);
 
             var list = new List<MimeMessageUId>();
@@ -205,11 +201,8 @@ namespace MailToDatabase
             return list;
         }
 
-        public async Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId)
+        public virtual async Task<MimeMessageUId> GetMessageUid(UniqueId uniqueId)
         {
-            //_mailFolder = await Authenticate();
-            //_mailFolder.Open(FolderAccess.ReadOnly);
-
             var mime = await _mailFolder.GetMessageAsync(uniqueId);
             if (mime != null)
             {
@@ -218,30 +211,30 @@ namespace MailToDatabase
             return null;
         }
 
-        public async Task<MimeMessageUId> GetMessage(UniqueId uniqueId)
+        public virtual async Task<MimeMessageUId> GetMessage(UniqueId uniqueId)
         {
-            _mailFolder = await Authenticate();
+            _mailFolder = await AuthenticateAsync();
             await _mailFolder.OpenAsync(FolderAccess.ReadOnly);
             return new MimeMessageUId(await _mailFolder.GetMessageAsync(uniqueId), uniqueId);
         }
 
-        public async Task<IList<IMessageSummary>> GetSummaries()
+        public virtual async Task<IList<IMessageSummary>> GetSummaries()
         {
-            var inbox = await Authenticate();
+            var inbox = await AuthenticateAsync();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
             return await inbox.FetchAsync(0, -1, MessageSummaryOptions);
         }
 
-        public async Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids)
+        public virtual async Task<IList<IMessageSummary>> GetSummaries(IList<UniqueId> uids)
         {
-            var inbox = await Authenticate();
+            var inbox = await AuthenticateAsync();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
             return await inbox.FetchAsync(uids, MessageSummaryOptions);
         }
 
-        public async Task<IList<IMessageSummary>> GetSummaries(ImapFilter filter, uint[] uidsToExclude = null)
+        public virtual async Task<IList<IMessageSummary>> GetSummaries(ImapFilter filter, uint[] uidsToExclude = null)
         {
-            var inbox = await Authenticate();
+            var inbox = await AuthenticateAsync();
             await inbox.OpenAsync(FolderAccess.ReadOnly);
             _lastRetrievedUIds = await GetUIds(filter);
             if (uidsToExclude?.Length > 0)
@@ -251,48 +244,48 @@ namespace MailToDatabase
             return await inbox.FetchAsync(_lastRetrievedUIds, MessageSummaryOptions);
         }
 
-        public async Task MarkAsRead(IList<UniqueId> uids)
+        public virtual async Task MarkAsRead(IList<UniqueId> uids)
         {
             if (_mailFolder == null)
             {
-                _mailFolder = await Authenticate();
+                _mailFolder = await AuthenticateAsync();
             }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.SetFlagsAsync(uids, MessageFlags.Seen, false);
         }
 
-        public async Task DeleteMessages(IList<UniqueId> uids)
+        public virtual async Task DeleteMessages(IList<UniqueId> uids)
         {
             if (_mailFolder == null)
             {
-                _mailFolder = await Authenticate();
+                _mailFolder = await AuthenticateAsync();
             }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.SetFlagsAsync(uids, MessageFlags.Deleted, false);
         }
 
-        public async Task DeleteMessages(ImapFilter imapFilter)
+        public virtual async Task DeleteMessages(ImapFilter imapFilter)
         {
             var uids = await GetUIds(imapFilter);
             await DeleteMessages(uids);
         }
 
-        public async Task ExpungeMail()
+        public virtual async Task ExpungeMail()
         {
             if (_mailFolder == null)
             {
-                _mailFolder = await Authenticate();
+                _mailFolder = await AuthenticateAsync();
             }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             await _mailFolder.ExpungeAsync();
         }
 
-        public async Task<UniqueId?> AppendMessage(MimeMessage mimeMessage, bool asNotSeen = false)
+        public virtual async Task<UniqueId?> AppendMessage(MimeMessage mimeMessage, bool asNotSeen = false)
         {
             var flags = asNotSeen ? MessageFlags.None : MessageFlags.Seen;
             if (_mailFolder == null)
             {
-                _mailFolder = await Authenticate();
+                _mailFolder = await AuthenticateAsync();
             }
             await _mailFolder.OpenAsync(FolderAccess.ReadWrite);
             return await _mailFolder.AppendAsync(mimeMessage);
@@ -308,7 +301,7 @@ namespace MailToDatabase
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
-                    if (_mailFolder != null)
+                    if (_mailFolder != null && _mailFolder.IsOpen)
                     {
                         await _mailFolder.CloseAsync();
                     }
@@ -317,7 +310,6 @@ namespace MailToDatabase
                         await _imapClient.DisconnectAsync(true);
                         _imapClient.Dispose();
                     }
-                    cancel.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>penCsharpener.MailToDatabase</RootNamespace>
+    <RootNamespace>MailToDatabase</RootNamespace>
     <LangVersion>preview</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>penCsharpener.Mail2DB</PackageId>

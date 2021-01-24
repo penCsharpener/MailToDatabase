@@ -1,4 +1,5 @@
 using FluentAssertions;
+using MailToDatabase.Clients;
 using System;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace MailToDatabase.Tests.Integration
 
         private Credentials Credentials { get; }
         private RetrievalConfiguration RetrievalConfiguration { get; }
-        private Client Mail2DB { get; }
+        private GenericClient Mail2DB { get; }
         private MailTypeConverter Converter { get; }
         private ImapFilter DefaultFilter { get; }
 
@@ -22,15 +23,25 @@ namespace MailToDatabase.Tests.Integration
         {
             Credentials = ConfigHelper.GetCredentials();
             RetrievalConfiguration = ConfigHelper.GetRetrievalConfiguration();
-            Mail2DB = new Client(Credentials);
+            Mail2DB = new GenericClient(Credentials);
             Converter = new MailTypeConverter(Mail2DB);
             DefaultFilter = new ImapFilter().NotSeen(); // younger than two days
         }
 
         [Fact]
-        public async Task PersonalFolder()
+        public async Task GetSpecificMailFolder()
         {
+            Mail2DB.SetMailFolder("inbox");
+
             var list = await Mail2DB.GetUIds(DefaultFilter);
+
+            list?.Count.Should().BeGreaterThan(0);
+        }
+
+        [Fact]
+        public async Task GetMailFolders()
+        {
+            var list = await Mail2DB.GetMailFoldersAsync();
 
             list?.Count.Should().BeGreaterThan(0);
         }
@@ -109,7 +120,7 @@ namespace MailToDatabase.Tests.Integration
         public async Task GetSpecificMailfolder()
         {
             Mail2DB.SetMailFolder("Sent");
-            await Mail2DB.Authenticate();
+            await Mail2DB.AuthenticateAsync();
             var count = (await Mail2DB.GetUIds()).Count;
             count.Should().BeGreaterThan(0);
         }

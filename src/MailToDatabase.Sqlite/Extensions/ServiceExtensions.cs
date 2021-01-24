@@ -1,4 +1,5 @@
-﻿using MailToDatabase.Contracts;
+﻿using MailToDatabase.Clients;
+using MailToDatabase.Contracts;
 using MailToDatabase.Sqlite.Configuration;
 using MailToDatabase.Sqlite.Persistence;
 using MailToDatabase.Sqlite.Services;
@@ -29,7 +30,7 @@ namespace MailToDatabase.Sqlite.Extensions
             .AddTransient<IImapService, ImapService>()
             .AddSingleton<IHashProvider, HashProvider>()
             .AddSingleton(_ => hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>())
-            .AddTransient<IRetrievalClient>(sp => new Client(hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>().Credentials))
+            .AddTransient<IRetrievalClient>(sp => new GenericClient(hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>().Credentials))
             .AddHostedService<Worker>();
 
             return services;

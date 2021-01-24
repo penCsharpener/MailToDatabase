@@ -1,7 +1,7 @@
 ﻿using MailKit;
 using MimeKit;
-using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MailToDatabase.Contracts
@@ -11,7 +11,7 @@ namespace MailToDatabase.Contracts
     /// </summary>
     public interface IMailToDatabaseClient
     {
-        Task<IMailFolder> Authenticate(Action<Exception> errorHandeling = null);
+        Task<IMailFolder> AuthenticateAsync(CancellationToken cancellationToken = default);
         Task ExpungeMail();
         Task MarkAsRead(IList<UniqueId> uids);
         Task DeleteMessages(IList<UniqueId> uids);
