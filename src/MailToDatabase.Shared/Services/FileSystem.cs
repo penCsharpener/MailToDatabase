@@ -1,6 +1,4 @@
-﻿using MailToDatabase.Sqlite.Configuration;
-using MailToDatabase.Sqlite.Extensions;
-using MailToDatabase.Sqlite.Services.Abstractions;
+﻿using MailToDatabase.Sqlite.Services.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Threading;
@@ -11,14 +9,14 @@ namespace MailToDatabase.Sqlite.Services
     public class FileSystem : IFileSystem
     {
         private const string EXPORT_PATH = "export";
-        private AppSettings _appSettings;
+        private readonly string _downloadDirectory;
         private readonly ILogger<FileSystem> _logger;
         private string _mailFolderPath;
 
-        public FileSystem(AppSettings settings, ILogger<FileSystem> logger)
+        public FileSystem(string downloadDirectory, string mailFolderPath, ILogger<FileSystem> logger)
         {
-            _appSettings = settings;
-            _mailFolderPath = settings.MailFolderName.Replace(" ", "_").Replace(Path.GetInvalidPathChars(), null).ToLower();
+            _mailFolderPath = mailFolderPath;
+            _downloadDirectory = downloadDirectory;
             _logger = logger;
         }
 
@@ -26,7 +24,7 @@ namespace MailToDatabase.Sqlite.Services
         {
             try
             {
-                var fullPath = Path.Combine(_appSettings.DownloadDirectory, EXPORT_PATH, _mailFolderPath, fileName + ".ime");
+                var fullPath = Path.Combine(_downloadDirectory, EXPORT_PATH, _mailFolderPath, fileName + ".ime");
 
                 CheckAndCreateDirectories();
 
@@ -45,14 +43,14 @@ namespace MailToDatabase.Sqlite.Services
 
         public bool IsExported(string fileName)
         {
-            var fullPath = Path.Combine(_appSettings.DownloadDirectory, fileName, ".ime");
+            var fullPath = Path.Combine(_downloadDirectory, fileName, ".ime");
 
             return File.Exists(fullPath);
         }
 
         private void CheckAndCreateDirectories()
         {
-            var dir = Path.Combine(_appSettings.DownloadDirectory, EXPORT_PATH, _mailFolderPath);
+            var dir = Path.Combine(_downloadDirectory, EXPORT_PATH, _mailFolderPath);
 
             if (!Directory.Exists(dir))
             {

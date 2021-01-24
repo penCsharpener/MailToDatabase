@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MailToDatabase.Shared\MailToDatabase.Shared.csproj" />
     <ProjectReference Include="..\MailToDatabase\MailToDatabase.csproj" />
   </ItemGroup>
 </Project>

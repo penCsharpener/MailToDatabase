@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace MailToDatabase.Sqlite.Extensions
@@ -22,15 +24,20 @@ namespace MailToDatabase.Sqlite.Extensions
 
         public static IServiceCollection RegisterServices(this IServiceCollection services, HostBuilderContext hostContext)
         {
+            var settings = hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+
             services.AddDbContext<AppDbContext>(options => options.UseSqlite(hostContext.Configuration.GetConnectionString("DefaultConnection")));
 
             services
-            .AddSingleton<IFileSystem, FileSystem>()
+            .AddSingleton<IFileSystem>(sp =>
+            {
+                return new FileSystem(settings.DownloadDirectory, settings.MailFolderName.Replace(" ", "_").Replace(Path.GetInvalidPathChars(), null).ToLower(), sp.GetService<ILogger<FileSystem>>());
+            })
             .AddTransient<ILookupRepository, LookupRepository>()
             .AddTransient<IImapService, ImapService>()
             .AddSingleton<IHashProvider, HashProvider>()
-            .AddSingleton(_ => hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>())
-            .AddTransient<IRetrievalClient>(sp => new GenericClient(hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>().Credentials))
+            .AddSingleton(_ => settings)
+            .AddTransient<IRetrievalClient>(sp => new GenericClient(settings.Credentials))
             .AddHostedService<Worker>();
 
             return services;
