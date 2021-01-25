@@ -1,8 +1,7 @@
+using MailToDatabase.ImeReader.Services.Abstractions;
+using MailToDatabase.Shared.Services.Abstractions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,19 +9,20 @@ namespace MailToDatabase.ImeReader
 {
     public class Worker : BackgroundService
     {
+        private readonly IWorkspaceProvider _workspaceProvider;
         private readonly ILogger<Worker> _logger;
 
-        public Worker(ILogger<Worker> logger)
+        public Worker(IImeParser parser, IWorkspaceProvider workspaceProvider, ILogger<Worker> logger)
         {
+            _workspaceProvider = workspaceProvider;
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            await foreach (var ime in _workspaceProvider.GetImeFilesAsync(stoppingToken))
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken);
+                _logger.LogInformation(ime.ImapMessage.Subject);
             }
         }
     }

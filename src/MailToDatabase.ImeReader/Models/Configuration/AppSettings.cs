@@ -15,7 +15,7 @@ namespace MailToDatabase.ImeReader.Models.Configuration
 
         public void ParseCommandlineParameters(IConfiguration configuration)
         {
-            if (string.IsNullOrWhiteSpace(configuration["InputPath"]))
+            if (!string.IsNullOrWhiteSpace(configuration["InputPath"]))
             {
                 InputPath = configuration["InputPath"];
                 if (File.Exists(InputPath))
@@ -34,7 +34,7 @@ namespace MailToDatabase.ImeReader.Models.Configuration
                 Ensure.ThatNotNull(InputPath, nameof(InputPath));
             }
 
-            if (string.IsNullOrWhiteSpace(configuration["OutputFolderPath"]))
+            if (!string.IsNullOrWhiteSpace(configuration["OutputFolderPath"]))
             {
                 OutputFolderPath = configuration["OutputFolderPath"];
             }

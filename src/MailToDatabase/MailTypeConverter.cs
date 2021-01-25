@@ -174,7 +174,7 @@ namespace MailToDatabase
             }
         }
 
-        public static async Task<ImapMessage> DeserializeMimeMessage(byte[] mimeMessageBytes, uint? uId)
+        public static async Task<ImapMessage> DeserializeMimeMessageAsync(byte[] mimeMessageBytes, uint? uId)
         {
             using (var ms = new MemoryStream(mimeMessageBytes))
             {

@@ -88,7 +88,7 @@ namespace MailToDatabase.Tests.Integration
             var oneMsg = list.FirstOrDefault();
 
             oneMsg.Should().NotBeNull();
-            var imapMsg = await MailTypeConverter.DeserializeMimeMessage(oneMsg.MimeMessageBytes, oneMsg.UId);
+            var imapMsg = await MailTypeConverter.DeserializeMimeMessageAsync(oneMsg.MimeMessageBytes, oneMsg.UId);
             oneMsg.Subject.Should().Be(imapMsg.Subject);
             Console.WriteLine("Deserialized message subject: '" + imapMsg.Subject + "'");
         }
