@@ -15,7 +15,7 @@ namespace MailToDatabase.Sqlite.Services
         private readonly AppDbContext _dbContext;
         private readonly IHashProvider _hashProvider;
 
-        public LookupRepository(AppDbContext dbContext, IFileSystem fileSystem, IHashProvider hashProvider)
+        public LookupRepository(AppDbContext dbContext, IHashProvider hashProvider)
         {
             _dbContext = dbContext;
             _hashProvider = hashProvider;

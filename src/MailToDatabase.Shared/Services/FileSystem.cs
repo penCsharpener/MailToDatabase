@@ -8,15 +8,10 @@ namespace MailToDatabase.Sqlite.Services
 {
     public class FileSystem : IFileSystem
     {
-        private const string EXPORT_PATH = "export";
-        private readonly string _downloadDirectory;
         private readonly ILogger<FileSystem> _logger;
-        private string _mailFolderPath;
 
-        public FileSystem(string downloadDirectory, string mailFolderPath, ILogger<FileSystem> logger)
+        public FileSystem(ILogger<FileSystem> logger)
         {
-            _mailFolderPath = mailFolderPath;
-            _downloadDirectory = downloadDirectory;
             _logger = logger;
         }
 
@@ -24,9 +19,9 @@ namespace MailToDatabase.Sqlite.Services
         {
             try
             {
-                var fullPath = Path.Combine(_downloadDirectory, EXPORT_PATH, _mailFolderPath, fileName + ".ime");
+                var fullPath = Path.Combine(fileName);
 
-                CheckAndCreateDirectories();
+                CheckAndCreateDirectories(fileName);
 
                 if (!File.Exists(fullPath))
                 {
@@ -43,14 +38,19 @@ namespace MailToDatabase.Sqlite.Services
 
         public bool IsExported(string fileName)
         {
-            var fullPath = Path.Combine(_downloadDirectory, fileName, ".ime");
+            var fullPath = Path.Combine(fileName);
 
             return File.Exists(fullPath);
         }
 
-        private void CheckAndCreateDirectories()
+        public async Task<string> ReadAllTextAsync(string fileName, CancellationToken cancellationToken = default)
         {
-            var dir = Path.Combine(_downloadDirectory, EXPORT_PATH, _mailFolderPath);
+            return await File.ReadAllTextAsync(fileName, cancellationToken);
+        }
+
+        private void CheckAndCreateDirectories(string fileName)
+        {
+            var dir = Path.GetDirectoryName(fileName);
 
             if (!Directory.Exists(dir))
             {

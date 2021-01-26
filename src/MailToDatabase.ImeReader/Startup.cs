@@ -3,6 +3,8 @@ using MailToDatabase.ImeReader.Services;
 using MailToDatabase.ImeReader.Services.Abstractions;
 using MailToDatabase.Shared.Services;
 using MailToDatabase.Shared.Services.Abstractions;
+using MailToDatabase.Sqlite.Services;
+using MailToDatabase.Sqlite.Services.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +24,7 @@ namespace MailToDatabase.ImeReader
 
             services.AddSingleton(settings)
                     .AddTransient<IWorkspaceProvider, WorkspaceProvider>()
+                    .AddTransient<IFileSystem, FileSystem>()
                     .AddTransient<IImeParser, ImeParser>();
 
             services.AddHostedService<Worker>();

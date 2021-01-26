@@ -1,7 +1,9 @@
 ﻿using MailToDatabase.Contracts;
 using MailToDatabase.Sqlite.Configuration;
+using MailToDatabase.Sqlite.Extensions;
 using MailToDatabase.Sqlite.Services.Abstractions;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,6 +11,11 @@ namespace MailToDatabase.Sqlite.Services
 {
     public class ImapService : IImapService
     {
+        private const string EXPORT_PATH = "export";
+        /// <summary>
+        /// ime = Imap Mail Export
+        /// </summary>
+        private const string IME_FILE_EXTENSION = ".ime";
         private readonly MailTypeConverter _mailConverter;
         private readonly IRetrievalClient _retrievalClient;
         private readonly ILookupRepository _repo;
@@ -51,7 +58,9 @@ namespace MailToDatabase.Sqlite.Services
                         continue;
                     }
 
-                    if (!await _fileSystem.TryWriteAllBytesAsync(email.FileName, imapMessage.MimeMessageBytes))
+                    var fullFileName = Path.Combine(_settings.DownloadDirectory, EXPORT_PATH, CleanUpMailFolderName(_settings.MailFolderName), email.FileName + IME_FILE_EXTENSION);
+
+                    if (!await _fileSystem.TryWriteAllBytesAsync(fullFileName, imapMessage.MimeMessageBytes))
                     {
                         await _repo.DeleteEmailAsync(email);
                         _logger.LogInformation($"Email from imap folder '{imapMessage.MailFolder}', uId '{imapMessage.UId}' could not be saved to disc.");
@@ -62,6 +71,11 @@ namespace MailToDatabase.Sqlite.Services
                     _logger.LogError(ex.Message);
                 }
             }
+        }
+
+        private string CleanUpMailFolderName(string mailFolderName)
+        {
+            return mailFolderName.Replace(" ", "_").Replace(Path.GetInvalidPathChars(), null).ToLower();
         }
     }
 }
