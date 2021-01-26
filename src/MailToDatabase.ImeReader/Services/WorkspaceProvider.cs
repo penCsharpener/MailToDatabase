@@ -1,6 +1,7 @@
 ﻿using MailToDatabase.ImeReader.Models;
 using MailToDatabase.ImeReader.Models.Configuration;
 using MailToDatabase.ImeReader.Services.Abstractions;
+using MailToDatabase.Shared.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;

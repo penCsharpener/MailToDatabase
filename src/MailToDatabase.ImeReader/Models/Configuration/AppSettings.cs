@@ -12,7 +12,6 @@ namespace MailToDatabase.ImeReader.Models.Configuration
         public string OutputFolderPath { get; set; }
         public InputModes InputMode { get; private set; }
 
-
         public void ParseCommandlineParameters(IConfiguration configuration)
         {
             if (!string.IsNullOrWhiteSpace(configuration["InputPath"]))

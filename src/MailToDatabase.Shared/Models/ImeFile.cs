@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MailToDatabase.ImeReader.Models
+namespace MailToDatabase.Shared.Models
 {
     public class ImeFile
     {

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace MailToDatabase.ImeReader
 {
@@ -13,7 +14,8 @@ namespace MailToDatabase.ImeReader
         {
             return Host.CreateDefaultBuilder(args)
                        .ConfigureAppConfiguration(Startup.ConfigureConfiguration(args))
-                       .ConfigureServices(Startup.ConfigureServices);
+                       .ConfigureServices(Startup.ConfigureServices)
+                       .UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
         }
     }
 }

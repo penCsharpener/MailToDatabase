@@ -17,7 +17,7 @@ namespace MailToDatabase.ImeReader
     {
         public static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection services)
         {
-            var settings = hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            var settings = hostContext.Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>() ?? new();
             settings.ParseCommandlineParameters(hostContext.Configuration);
 
             services.AddSingleton(settings)
@@ -36,11 +36,12 @@ namespace MailToDatabase.ImeReader
 
             return (hostContext, builder) =>
             {
-                new ConfigurationBuilder()
-                           .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
-                           .AddCommandLine(args, switchMapping)
-                           .AddUserSecrets<Program>()
-                           .AddEnvironmentVariables();
+                builder.Sources.Clear();
+                builder.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+                       .AddJsonFile("appsettings.json", true, true)
+                       .AddUserSecrets<Program>(true, true)
+                       .AddEnvironmentVariables()
+                       .AddCommandLine(args, switchMapping);
             };
         }
     }
