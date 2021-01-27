@@ -28,7 +28,6 @@ namespace MailToDatabase
 {
     public class ImapMessage
     {
-
         public byte[] MimeMessageBytes { get; set; }
         public uint UId { get; set; }
         public string MailFolder { get; set; }

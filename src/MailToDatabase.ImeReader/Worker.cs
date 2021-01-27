@@ -29,7 +29,8 @@ namespace MailToDatabase.ImeReader
                 {
                     var parser = scope.ServiceProvider.GetRequiredService<IImeParser>();
 
-                    await parser.ParseAsync(ime);
+                    await parser.ParseAsync(ime, stoppingToken);
+                    await parser.ExtractAttachmentsAsync(ime, stoppingToken);
                 }
             }
         }
